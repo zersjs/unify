@@ -27,7 +27,7 @@ New-NetFirewallRule -DisplayName "Unify" -Direction Inbound -Protocol TCP -Local
 Some routers and corporate networks block mDNS. In that case:
 
 1. Find the Windows IP address: **Settings → Network & internet → Properties → IPv4 address**.
-2. On the Mac open Unify → *Ağ ve bağlantı → Diğer bilgisayarın adresi (elle) (Network → Other computer's address)*, enter `IP:47823` and save.
+2. On the Mac open Unify → **Network → Other computer's address**, enter `IP:47823` and save.
 3. Both computers attempt to connect; as long as one can reach the other, the session is established.
 
 Guest Wi-Fi networks usually block client-to-client traffic ("AP isolation"); connect both computers to the main network.

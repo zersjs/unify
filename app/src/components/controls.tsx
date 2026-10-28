@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useSlidingIndicator } from "./motion";
 
 export function Group({ title, footer, children }: { title?: string; footer?: ReactNode; children: ReactNode }) {
   const headingId = useId();
@@ -88,16 +89,33 @@ export function Segmented<T extends string>({
   onChange: (value: T) => void;
   label: string;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLSpanElement>(null);
+  const handledByPointer = useRef(false);
+  useSlidingIndicator(containerRef, thumbRef, `${value}|${options.map((option) => option.label).join("|")}`, "x");
   return (
-    <div className="segmented" role="radiogroup" aria-label={label}>
+    <div className="segmented" role="radiogroup" aria-label={label} ref={containerRef}>
+      <span className="segment-thumb" ref={thumbRef} aria-hidden="true" />
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           role="radio"
           aria-checked={option.value === value}
+          data-active={option.value === value}
           className="segment"
-          onClick={() => onChange(option.value)}
+          onPointerDown={(event) => {
+            if (event.button !== 0) return;
+            handledByPointer.current = true;
+            if (option.value !== value) onChange(option.value);
+          }}
+          onClick={() => {
+            if (handledByPointer.current) {
+              handledByPointer.current = false;
+              return;
+            }
+            if (option.value !== value) onChange(option.value);
+          }}
         >
           {option.label}
         </button>

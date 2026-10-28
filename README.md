@@ -33,12 +33,12 @@ Unify shares one **keyboard, mouse and text clipboard** between a macOS (Apple S
 
 ## Quick start
 
-The user interface is currently in Turkish; labels are quoted below as *Turkish (English)*.
+The interface is available in English (default) and Turkish (**General → Language**).
 
 1. Install Unify on both computers ([installation](docs/installation-and-build.md)).
 2. On the Mac, grant Accessibility and Input Monitoring ([permissions](docs/permissions.md)).
-3. On one computer choose *Eşleştir → Kod oluştur (Pair → Create code)*, on the other *Koda katıl (Join with code)* ([pairing](docs/pairing.md)).
-4. On the *Ekran düzeni (Display layout)* page, select where the other computer sits.
+3. On one computer choose **Pair → Create code**, on the other **Join with code** ([pairing](docs/pairing.md)).
+4. On the **Display layout** page, drag the other computer to the side where it physically stands.
 
 Emergency return shortcut: Windows `Ctrl+Alt+Shift+Space`, Mac `Control+Option+Shift+Space`.
 

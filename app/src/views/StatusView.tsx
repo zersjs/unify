@@ -67,8 +67,11 @@ export function StatusView({ status, onPair, onOpenSecurity }: { status: StatusS
       <LayoutDiagram
         side={settings.peer_side}
         localName={status.device.name}
+        localCaption={t.status.thisComputer}
         peerName={peer?.name ?? null}
+        peerCaption={peer ? t.os[peer.os] : t.status.noPeer}
         control={status.control}
+        connected={connection.state === "connected"}
         description={diagramDescription}
       />
 

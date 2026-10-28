@@ -1,12 +1,10 @@
 # Secure device pairing
 
-The UI is currently Turkish; labels are written as *Turkish (English)*.
-
 1. Open Unify on both computers.
-2. On computer A (for example Windows): *Durum → Eşleştir → Kod oluştur (Status → Pair → Create code)*. A 6-digit code is shown for 120 seconds.
-3. On computer B (for example the Mac): *Eşleştir → Koda katıl (Pair → Join with code)*. Pick A from *Ağda bulunan bilgisayarlar (Computers found on the network)* or type its address (`192.168.1.20` or `192.168.1.20:47823`), enter the code, press *Bağlan (Connect)*.
-4. A shows a pairing request with B's fingerprint. B shows the same value as *Bu bilgisayarın parmak izi (This computer's fingerprint)*. If they match, choose *Eşleştir (Pair)*.
-5. Both computers store each other's certificate and switch to *Bağlandı (Connected)* within seconds.
+2. On computer A (for example Windows): **Status → Pair → Create code**. A 6-digit code is shown for 120 seconds.
+3. On computer B (for example the Mac): **Pair → Join with code**. Pick A from **Computers found on the network** or type its address (`192.168.1.20` or `192.168.1.20:47823`), enter the code, press **Connect**.
+4. A shows a pairing request with B's fingerprint. B shows the same value as **This computer's fingerprint**. If they match, choose **Pair**.
+5. Both computers store each other's certificate and switch to **Connected** within seconds.
 
 ## What happens underneath
 
@@ -17,6 +15,6 @@ The UI is currently Turkish; labels are written as *Turkish (English)*.
 
 ## Removing a pairing and invalidating keys
 
-- *Eşleştirilmiş cihaz → Eşleştirmeyi kaldır (Paired device → Remove pairing)*: disconnects and deletes the peer certificate; that device can no longer connect.
-- *Güvenlik ve izinler → Cihaz kimliğini yenile (Security & permissions → Reset device identity)*: regenerates this computer's key and certificate. Every previously paired device stops recognising it. Use this if a device may be compromised.
+- **Paired device → Remove pairing**: disconnects and deletes the peer certificate; that device can no longer connect.
+- **Security & permissions → Reset device identity**: regenerates this computer's key and certificate. Every previously paired device stops recognising it. Use this if a device may be compromised.
 - Pairing a new device replaces the current pairing (Unify is designed for two computers).

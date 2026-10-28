@@ -1,7 +1,5 @@
 # Installation, building and removal
 
-The UI is currently Turkish; menu paths are written as *Turkish (English)*.
-
 ## Installing
 
 ### Windows 11
@@ -19,7 +17,7 @@ The UI is currently Turkish; menu paths are written as *Turkish (English)*.
 
 ### Autostart
 
-Off **by default**. Enable it under *Genel → Oturum açıldığında başlat (General → Start at login)*. When enabled, the app starts with the `--background` argument and does not show its window. Windows uses the per-user `Run` registry key; macOS uses a LaunchAgent in `~/Library/LaunchAgents`.
+Off **by default**. Enable it under **General → Start at login**. When enabled, the app starts with the `--background` argument and does not show its window. Windows uses the per-user `Run` registry key; macOS uses a LaunchAgent in `~/Library/LaunchAgents`.
 
 ## Development environment
 
@@ -95,7 +93,7 @@ To sign, fill in `bundle.macOS.signingIdentity` and, for Windows, `bundle.window
 
 ## Removal and cleanup
 
-1. In Unify choose *Eşleştirilmiş cihaz → Eşleştirmeyi kaldır (Paired device → Remove pairing)* (do it on the other computer too).
+1. In Unify choose **Paired device → Remove pairing** (do it on the other computer too).
 2. Uninstall: Windows **Settings → Apps → Unify → Uninstall**; on macOS move Unify to the Trash.
 3. Delete settings and identity files:
    - Windows: `%APPDATA%\dev.unify.desktop`, `%LOCALAPPDATA%\dev.unify.desktop`

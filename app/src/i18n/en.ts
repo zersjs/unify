@@ -108,7 +108,9 @@ export const en = {
     removePeerConfirm: "This removes the other computer's permission to connect. Continue?",
     pairNew: "Pair new device",
     peerPosition: "Position of the other computer",
-    peerPositionHelp: "Control moves to the other computer when the pointer crosses this edge. The other computer is updated automatically.",
+    peerPositionHelp:
+      "Drag the other computer to the side where it physically stands, or pick the side above. Control moves when the pointer crosses that edge; the other computer is updated automatically.",
+    dragPeer: (name: string, where: string) => `${name}, ${where} this computer. Drag or use the arrow keys to change the position.`,
     edgeSwitch: "Switch at screen edge",
     dwell: "Edge delay",
     dwellHelp: "How long the pointer must rest at the edge, to avoid accidental switching.",

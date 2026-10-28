@@ -5,12 +5,12 @@
 | Paket | Test sayısı | Kapsam |
 |---|---|---|
 | `unify-proto` | 19 | Tüm mesaj tiplerinin serileştirilmesi, parçalı okuma, sıfır/aşırı uzunluk, bozuk ve eksik paket, alan sınırları, HID ↔ Windows ↔ macOS tablolarının çift yönlü tutarlılığı, Türkçe Q tuş konumları, ISO tuş takası |
-| `unify-core` | 55 | Kenar geçiş durum makinesi (silahlanma, bekleme, köşe koruması, tekrar geçiş engeli), uzak imleç ve dönüş kenarı, çoklu ekran geometrisi, pano döngü önleme ve tekrar gönderim, parça birleştirme (sıra, taşma, özet, UTF-8), modifier eşleme, kısayol filtresi, takılı tuş bırakma, yapılandırma yükleme/bozuk dosya kurtarma, adres doğrulama, yeniden deneme zamanlayıcısı |
+| `unify-core` | 56 | Kenar geçiş durum makinesi (silahlanma, bekleme, köşe koruması, tekrar geçiş engeli), uzak imleç ve dönüş kenarı, çoklu ekran geometrisi, pano döngü önleme ve tekrar gönderim, parça birleştirme (sıra, taşma, özet, UTF-8), modifier eşleme, kısayol filtresi, takılı tuş bırakma, yapılandırma yükleme/bozuk dosya kurtarma, adres doğrulama, yeniden deneme zamanlayıcısı |
 | `unify-security` | 14 | Kimlik üretimi ve saklama, anahtar-sertifika uyuşmazlığı, kimlik yenileme, SPAKE2 doğru/yanlış kod, kanal bağlama, yansıtma ve parmak izi takası saldırıları, kod penceresi süresi ve deneme sınırı |
 | `unify-net` | 10 | Öncelikli yazıcı (giriş olayı pano parçalarının önüne geçer), fare hareketi birleştirme, kuyruk taşması, bozuk çerçeve, mDNS kayıt doğrulama |
 | `unify-platform` | 8 + 1 | macOS saf mantığı (modifier bayrakları, kaydırma dönüşümü, çift tıklama), Windows mutlak koordinat ve tarama kodu üretimi; **gerçek Windows panosu** üzerinde Türkçe/CRLF/emoji gidiş-dönüş ve `WM_CLIPBOARDUPDATE` bildirimi (`--include-ignored` ile) |
 | `unify-runtime` | 17 | İki runtime arasında gerçek TLS: onaylı eşleştirme, yanlış kod, yerel ret, pano iki yön (400 KB dahil) ve döngüsüzlük, gizli içerik filtresi, pano kapatma, kenar geçişi + Command→Ctrl, izinsiz giriş reddi, kopmada tuş bırakma, kısayolla dönüş, paylaşımı kapalı eşin reddi, yeniden başlatma sonrası bağlanma, eşleştirme kaldırma, yetkisiz sertifika ve kimlik doğrulama öncesi mesaj reddi, RTT ölçümü |
-| `app` (Vitest) | 7 | Durum ekranı, ayar yaması, eşleştirme düğmesi, izin uyarısı, kontrolü geri alma, kod girişi normalizasyonu |
+| `app` (Vitest) | 29 | Yay animasyon motoru (yerleşme, tek yönlü hareket, azaltılmış hareket), İngilizce ve Türkçe durum ekranı, ayar yaması, eşleştirme düğmesi, izin uyarısı, kontrolü geri alma, kod girişi, İngilizce/Türkçe anahtar eşliği, ekran düzeni sürükle-bırak (ok tuşları, en yakın kenara bırakma, iptal), yay, momentum izdüşümü, kenar esnemesi ve bırakma hızı |
 
 Komutlar: `cargo test --workspace`, `cargo test -p unify-platform -- --include-ignored`, `npm --prefix app test`.
 
@@ -65,6 +65,8 @@ Ortam: Apple M2 MacBook (macOS sürümünü not edin), Windows 11 bilgisayar, ay
 | M27 | Bir taraftan eşleştirmeyi kaldır | Bağlantı kesilir ve yeniden kurulmaz | Güvenlik |
 | M28 | Koyu/açık tema, klavyeyle gezinme, VoiceOver/Narrator ile ana ekran | Okunaklı, tüm kontroller erişilebilir | 11 |
 | M29 | Fare hareketi gecikmesini algısal olarak değerlendir, Ağ ve bağlantı sayfasındaki ölçülen gecikmeyi not et | Fark edilmeyecek düzey; RTT değeri kaydedilir | Performans |
+| M30 | Ekran düzeni sayfasında diğer bilgisayarı fare ve trackpad ile her kenara sürükle, fırlat, ok tuşlarını kullan | Kutu imleci birebir izler, sıçramadan en yakın kenara yerleşir; diğer bilgisayarda ayna konum görünür | 7, 11 |
+| M31 | Genel → Dil ayarını English ve Türkçe arasında değiştir | Pencere ve tepsi menüsü hemen dil değiştirir; ayar yeniden başlatmada korunur | 11 |
 
 ## 4. Test edilemeyen durumlar
 

@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { StatusSnapshot } from "@/bridge";
 import { StatusDot } from "@/components/controls";
+import { PageTransition, useSlidingIndicator } from "@/components/motion";
+import { NavIcon } from "@/components/NavIcon";
 import { I18nProvider, useI18n } from "@/i18n";
 import { useSettingsViewModel } from "@/viewmodels/useSettingsViewModel";
 import { useStatusViewModel } from "@/viewmodels/useStatusViewModel";
@@ -21,6 +23,7 @@ import { StatusView } from "@/views/StatusView";
 type PageKey = "status" | "general" | "devices" | "layout" | "input" | "clipboard" | "network" | "security" | "diagnostics" | "about";
 
 const settingsPages: PageKey[] = ["general", "devices", "layout", "input", "clipboard", "network", "security", "diagnostics", "about"];
+const allPages: PageKey[] = ["status", ...settingsPages];
 
 function platformOf(): string {
   const agent = navigator.userAgent;
@@ -32,6 +35,15 @@ function platformOf(): string {
 function Shell({ status }: { status: StatusSnapshot }) {
   const { t } = useI18n();
   const [page, setPage] = useState<PageKey>("status");
+  const [direction, setDirection] = useState(1);
+  const navRef = useRef<HTMLElement>(null);
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  useSlidingIndicator(navRef, indicatorRef, page, "y");
+  const navigate = (next: PageKey) => {
+    if (next === page) return;
+    setDirection(allPages.indexOf(next) >= allPages.indexOf(page) ? 1 : -1);
+    setPage(next);
+  };
   const [pairingOpen, setPairingOpen] = useState(false);
   const vm = useSettingsViewModel(status);
   const openPairing = () => setPairingOpen(true);
@@ -40,7 +52,7 @@ function Shell({ status }: { status: StatusSnapshot }) {
   let content;
   switch (page) {
     case "status":
-      content = <StatusView status={status} onPair={openPairing} onOpenSecurity={() => setPage("security")} />;
+      content = <StatusView status={status} onPair={openPairing} onOpenSecurity={() => navigate("security")} />;
       break;
     case "general":
       content = <GeneralPage status={status} vm={vm} />;
@@ -73,19 +85,41 @@ function Shell({ status }: { status: StatusSnapshot }) {
 
   return (
     <div className="shell">
-      <nav className="sidebar" aria-label={t.appName}>
-        <button type="button" className="nav-item" aria-current={page === "status" ? "page" : undefined} onClick={() => setPage("status")}>
+      <nav className="sidebar" aria-label={t.appName} ref={navRef}>
+        <span className="nav-indicator" ref={indicatorRef} aria-hidden="true" />
+        <button
+          type="button"
+          className="nav-item"
+          data-active={page === "status"}
+          aria-current={page === "status" ? "page" : undefined}
+          onPointerDown={() => navigate("status")}
+          onClick={() => navigate("status")}
+        >
+          <NavIcon name="status" />
+          <span className="nav-label">{t.nav.status}</span>
           <StatusDot tone={tone} />
-          {t.nav.status}
         </button>
         <p className="nav-heading">{t.nav.settingsGroup}</p>
         {settingsPages.map((key) => (
-          <button key={key} type="button" className="nav-item" aria-current={page === key ? "page" : undefined} onClick={() => setPage(key)}>
-            {t.nav[key]}
+          <button
+            key={key}
+            type="button"
+            className="nav-item"
+            data-active={page === key}
+            aria-current={page === key ? "page" : undefined}
+            onPointerDown={() => navigate(key)}
+            onClick={() => navigate(key)}
+          >
+            <NavIcon name={key} />
+            <span className="nav-label">{t.nav[key]}</span>
           </button>
         ))}
       </nav>
-      <main className="content">{content}</main>
+      <main className="content">
+        <PageTransition pageKey={page} direction={direction}>
+          {content}
+        </PageTransition>
+      </main>
       {pairingOpen && status.pairing?.kind !== "awaiting_approval" ? <PairingDialog status={status} onClose={() => setPairingOpen(false)} /> : null}
       <ApprovalDialog status={status} />
     </div>

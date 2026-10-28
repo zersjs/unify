@@ -5,12 +5,12 @@
 | Package | Tests | Coverage |
 |---|---|---|
 | `unify-proto` | 19 | Serialisation of every message type, split reads, zero/oversized length, malformed and truncated packets, field limits, bidirectional consistency of HID ↔ Windows ↔ macOS tables, Turkish Q key positions, ISO key swap |
-| `unify-core` | 55 | Edge-switch state machine (arming, dwell, corner guard, re-entry prevention), remote cursor and return edge, multi-monitor geometry, clipboard loop prevention and re-send, chunk assembly (order, overflow, hash, UTF-8), modifier mapping, hotkey filter, stuck-key release, config load and corrupt-file recovery, address validation, backoff |
+| `unify-core` | 56 | Edge-switch state machine (arming, dwell, corner guard, re-entry prevention), remote cursor and return edge, multi-monitor geometry, clipboard loop prevention and re-send, chunk assembly (order, overflow, hash, UTF-8), modifier mapping, hotkey filter, stuck-key release, config load and corrupt-file recovery, language setting default and migration, address validation, backoff |
 | `unify-security` | 14 | Identity generation and storage, key/certificate mismatch, identity reset, SPAKE2 right/wrong code, channel binding, reflection and fingerprint-swap attacks, code window expiry and attempt limit |
 | `unify-net` | 10 | Prioritised writer (input overtakes clipboard chunks), mouse-move coalescing, queue overflow, malformed frames, mDNS record validation |
 | `unify-platform` | 8 + 1 | macOS pure logic (modifier flags, scroll conversion, double click), Windows absolute coordinates and scan code generation; Turkish/CRLF/emoji round trip on the **real Windows clipboard** with `WM_CLIPBOARDUPDATE` notification (`--include-ignored`) |
 | `unify-runtime` | 17 | Real TLS between two runtimes: approved pairing, wrong code, local rejection, bidirectional clipboard (including 400 KB) without loops, secret-content filter, clipboard off, edge crossing + Command→Ctrl, rejection of unrequested input, key release on disconnect, hotkey return, refusal when the peer disabled sharing, reconnect after restart, pairing removal, rejection of unknown certificates and pre-authentication messages, RTT measurement |
-| `app` (Vitest) | 7 | Status screen, settings patch, pair button, permission banner, release control, code input normalisation |
+| `app` (Vitest) | 29 | Spring animator (settling, monotonic, reduced motion), status screen in English and Turkish, settings patch, pair button, permission banner, release control, code input normalisation, English/Turkish key parity, layout drag-and-drop (arrow keys, drop on nearest side, cancel), spring, momentum projection, rubber-band and release-velocity physics |
 
 Commands: `cargo test --workspace`, `cargo test -p unify-platform -- --include-ignored`, `npm --prefix app test`.
 
@@ -65,6 +65,8 @@ Environment: Apple M2 MacBook (record macOS version), Windows 11 PC, same Wi-Fi 
 | M27 | Remove the pairing on one side | Disconnects and does not reconnect | Security |
 | M28 | Dark/light theme, keyboard navigation, VoiceOver/Narrator on the main screen | Legible, all controls reachable | 11 |
 | M29 | Judge pointer latency subjectively, note the RTT shown on the network page | Imperceptible; RTT recorded | Performance |
+| M30 | On the Display layout page drag the other computer to each side with mouse and trackpad, flick it, and use the arrow keys | Box follows the pointer 1:1, settles on the nearest side without jumping; the other computer shows the mirrored side | 7, 11 |
+| M31 | Switch General → Language between English and Türkçe | Window and tray menu change language immediately; setting survives restart | 11 |
 
 ## 4. Not tested
 

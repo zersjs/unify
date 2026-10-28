@@ -10,7 +10,7 @@
 
 Steps:
 
-1. Unify → *Güvenlik ve izinler → İzin iste (Security & permissions → Request permission)*. macOS shows dialogs for Input Monitoring and Accessibility.
+1. Unify → **Security & permissions → Request permission**. macOS shows dialogs for Input Monitoring and Accessibility.
 2. Enable Unify under **System Settings → Privacy & Security → Accessibility**.
 3. Enable Unify under **Input Monitoring**. macOS may ask you to restart the app.
 4. Answer **Allow** to the "find devices on local networks" prompt at the first connection.

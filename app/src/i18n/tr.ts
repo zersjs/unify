@@ -109,7 +109,9 @@ export const tr: Strings = {
     removePeerConfirm: "Bu bilgisayarın diğer bilgisayara bağlanma yetkisi kaldırılacak. Devam edilsin mi?",
     pairNew: "Yeni cihaz eşleştir",
     peerPosition: "Diğer bilgisayarın konumu",
-    peerPositionHelp: "Fare bu kenardan geçtiğinde kontrol diğer bilgisayara geçer. Ayar diğer bilgisayara otomatik uygulanır.",
+    peerPositionHelp:
+      "Diğer bilgisayarı fiziksel olarak durduğu tarafa sürükleyin veya yukarıdan seçin. Fare o kenarı geçtiğinde kontrol geçer; ayar diğer bilgisayara otomatik uygulanır.",
+    dragPeer: (name: string, where: string) => `${name}, bu bilgisayarın ${where}. Konumu değiştirmek için sürükleyin veya ok tuşlarını kullanın.`,
     edgeSwitch: "Ekran kenarından geçiş",
     dwell: "Kenarda bekleme süresi",
     dwellHelp: "Yanlışlıkla geçişi önlemek için imlecin kenarda kalması gereken süre.",

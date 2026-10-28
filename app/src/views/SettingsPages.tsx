@@ -1,7 +1,7 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import type { LogLevel, MacKeyboardLayout, Side, StatusSnapshot, UiLanguage } from "@/bridge";
 import { Button, Group, InlineError, Row, Segmented, Toggle, ToggleRow } from "@/components/controls";
-import { LayoutDiagram } from "@/components/LayoutDiagram";
+import { DraggableLayout } from "@/components/DraggableLayout";
 import { languageNames, useI18n } from "@/i18n";
 import type { SettingsViewModel } from "@/viewmodels/useSettingsViewModel";
 
@@ -159,12 +159,11 @@ export function LayoutPage({ status, vm }: PageProps) {
   const peerName = status.peer?.name ?? null;
   return (
     <PageFrame title={t.nav.layout} vm={vm}>
-      <LayoutDiagram
+      <DraggableLayout
         side={vm.settings.peer_side}
         localName={status.device.name}
-        peerName={peerName}
-        control={status.control}
-        description={peerName ? t.status.diagram(peerName, t.sideOf[vm.settings.peer_side], t.control.local) : t.status.noPeer}
+        peerName={peerName ?? t.status.pairedComputer}
+        onChange={(peer_side) => void vm.update.run({ peer_side })}
       />
       <Group footer={t.settings.peerPositionHelp}>
         <Row label={t.settings.peerPosition}>

@@ -17,4 +17,4 @@
 | Number of computers | Two | By design |
 | mDNS | Blocked on some networks | Manual address |
 | WebView2 when the window is closed | Processes stay in memory | "Quit" from the tray exits completely |
-| UI language | Turkish only | Strings are centralised in `app/src/i18n/tr.ts`; an English locale can be added |
+| UI languages | English (default) and Turkish | New locales are added as a table in `app/src/i18n/` typed against `en.ts` |

@@ -31,9 +31,11 @@ Unify, bir macOS (Apple Silicon) bilgisayar ile bir Windows 11 bilgisayar arası
 
 ## Hızlı başlangıç
 
+Arayüz varsayılan olarak İngilizcedir. **General → Language** ayarından **Türkçe** seçildiğinde bu belgelerdeki menü adları geçerli olur.
+
 1. Her iki bilgisayara Unify'ı kurun ([kurulum](04-kurulum-ve-derleme.md)).
 2. Mac'te Erişilebilirlik ve Giriş İzleme izinlerini verin ([izinler](05-izinler.md)).
 3. Bir bilgisayarda **Eşleştir → Kod oluştur**, diğerinde **Koda katıl** ([eşleştirme](06-eslestirme.md)).
-4. **Ekran düzeni** sayfasında diğer bilgisayarın konumunu seçin.
+4. **Ekran düzeni** sayfasında diğer bilgisayarı fiziksel olarak durduğu tarafa sürükleyin.
 
 Acil geri alma kısayolu: Windows `Ctrl+Alt+Shift+Boşluk`, Mac `Control+Option+Shift+Boşluk`.
