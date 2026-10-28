@@ -1,0 +1,22 @@
+[package]
+name = "unify-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "unify-cli"
+path = "src/main.rs"
+
+[dependencies]
+unify-core.workspace = true
+unify-proto.workspace = true
+unify-platform.workspace = true
+unify-runtime.workspace = true
+unify-security.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "io-std", "io-util", "signal", "sync", "time"] }
+tracing.workspace = true
+tracing-subscriber.workspace = true
+clap.workspace = true
+directories.workspace = true
