@@ -4,6 +4,8 @@
 
 **English** · [Türkçe](docs/tr/README.md)
 
+<img width="1018" height="588" alt="image" src="https://github.com/user-attachments/assets/9577e524-9530-48cd-aff1-d0e667f1c90c" />
+
 Unify shares one **keyboard, mouse and text clipboard** between a macOS (Apple Silicon) computer and a Windows 11 computer over the local network. Move the pointer past the edge of one screen and control moves to the other computer; copy text on one machine and paste it on the other.
 
 - End-to-end TLS 1.3 with certificate pinning, and code-based pairing over SPAKE2
