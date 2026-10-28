@@ -44,7 +44,7 @@ rand = "0.8.5"
 zeroize = { version = "1.8.1", features = ["derive"] }
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native"] }
 mdns-sd = "0.13.11"
-base64 = "0.22.1"
+base64 = "0.23.1"
 directories = "6.0.0"
 clap = { version = "4.5.48", features = ["derive"] }
 
