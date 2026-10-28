@@ -97,6 +97,45 @@ textarea {
   overflow-y: auto;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-4);
+  color: var(--color-text);
+}
+
+.brand-name {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.logo {
+  flex: none;
+}
+
+.about-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--color-group-border);
+  border-radius: var(--radius-group);
+  background: var(--color-stage);
+  color: var(--color-text);
+}
+
+.about-hero p {
+  margin: 0;
+}
+
+.about-name {
+  font-size: 1.375rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
 .nav-indicator {
   position: absolute;
   top: 0;
@@ -793,6 +832,11 @@ textarea {
   .nav-indicator,
   .nav-heading {
     display: none;
+  }
+
+  .brand {
+    width: 100%;
+    padding-bottom: var(--space-2);
   }
 
   .nav-item {

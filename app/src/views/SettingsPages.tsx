@@ -2,6 +2,7 @@ import { useEffect, useId, useState, type ReactNode } from "react";
 import type { LogLevel, MacKeyboardLayout, Side, StatusSnapshot, UiLanguage } from "@/bridge";
 import { Button, Group, InlineError, Row, Segmented, Toggle, ToggleRow } from "@/components/controls";
 import { DraggableLayout } from "@/components/DraggableLayout";
+import { Logo } from "@/components/Logo";
 import { languageNames, useI18n } from "@/i18n";
 import type { SettingsViewModel } from "@/viewmodels/useSettingsViewModel";
 
@@ -497,6 +498,15 @@ export function AboutPage({ status, vm }: PageProps) {
   const { t } = useI18n();
   return (
     <PageFrame title={t.nav.about} vm={vm}>
+      <div className="about-hero">
+        <Logo size={72} title={t.appName} />
+        <div>
+          <p className="about-name">{t.appName}</p>
+          <p className="muted">
+            {t.settings.version} {status.appVersion}
+          </p>
+        </div>
+      </div>
       <Group footer={t.settings.aboutBody}>
         <Row label={t.appName} detail={`${t.settings.version} ${status.appVersion}`} />
         <Row label={t.status.thisComputer} detail={`${status.device.name} · ${t.os[status.device.os]}`} />

@@ -18,3 +18,4 @@
 | mDNS | Bazı ağlarda engelli | Elle adres |
 | Pencere kapatıldığında WebView2 | Süreçler bellekte kalır | Tepsiden "Çık" tamamen kapatır |
 | Arayüz dilleri | İngilizce (varsayılan) ve Türkçe | Yeni diller `app/src/i18n/` altında `en.ts` tipine göre eklenir |
+| Tema | Yalnızca açık tema | Arayüz, sistemin koyu modundan bağımsız olarak beyaz marka temasını kullanır |

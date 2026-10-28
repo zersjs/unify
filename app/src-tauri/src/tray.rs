@@ -1,3 +1,5 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
@@ -58,7 +60,42 @@ fn labels(language: UiLanguage) -> &'static Labels {
     }
 }
 
+fn tray_icon(dark_taskbar: bool) -> tauri::Result<Image<'static>> {
+    if dark_taskbar {
+        Image::from_bytes(include_bytes!("../icons/tray-light.png"))
+    } else {
+        Image::from_bytes(include_bytes!("../icons/tray.png"))
+    }
+}
+
+#[cfg(windows)]
+fn uses_dark_taskbar() -> bool {
+    use windows_sys::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_DWORD};
+    let key: Vec<u16> = "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\0".encode_utf16().collect();
+    let value: Vec<u16> = "SystemUsesLightTheme\0".encode_utf16().collect();
+    let mut data: u32 = 1;
+    let mut size = std::mem::size_of::<u32>() as u32;
+    let status = unsafe {
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            key.as_ptr(),
+            value.as_ptr(),
+            RRF_RT_REG_DWORD,
+            std::ptr::null_mut(),
+            (&mut data as *mut u32).cast(),
+            &mut size,
+        )
+    };
+    status == 0 && data == 0
+}
+
+#[cfg(not(windows))]
+fn uses_dark_taskbar() -> bool {
+    false
+}
+
 pub struct TrayItems {
+    dark_taskbar: AtomicBool,
     status: MenuItem<Wry>,
     show: MenuItem<Wry>,
     input: CheckMenuItem<Wry>,
@@ -115,9 +152,9 @@ pub fn create(app: &App, status: &StatusSnapshot) -> tauri::Result<TrayItems> {
             &quit,
         ],
     )?;
-    let icon = Image::from_bytes(include_bytes!("../icons/tray.png"))?;
+    let dark_taskbar = uses_dark_taskbar();
     TrayIconBuilder::with_id(TRAY_ID)
-        .icon(icon)
+        .icon(tray_icon(dark_taskbar)?)
         .icon_as_template(true)
         .tooltip("Unify")
         .menu(&menu)
@@ -158,7 +195,7 @@ pub fn create(app: &App, status: &StatusSnapshot) -> tauri::Result<TrayItems> {
             }
         })
         .build(app)?;
-    Ok(TrayItems { status: status_item, show, input, clipboard, resync, release, quit })
+    Ok(TrayItems { dark_taskbar: AtomicBool::new(dark_taskbar), status: status_item, show, input, clipboard, resync, release, quit })
 }
 
 pub fn update(app: &AppHandle, items: &TrayItems, status: &StatusSnapshot) {
@@ -176,5 +213,12 @@ pub fn update(app: &AppHandle, items: &TrayItems, status: &StatusSnapshot) {
     let _ = items.release.set_enabled(status.control != ControlState::Local);
     if let Some(tray) = app.tray_by_id(TRAY_ID) {
         let _ = tray.set_tooltip(Some(format!("Unify — {connection}")));
+        let dark_taskbar = uses_dark_taskbar();
+        if items.dark_taskbar.swap(dark_taskbar, Ordering::Relaxed) != dark_taskbar {
+            if let Ok(icon) = tray_icon(dark_taskbar) {
+                let _ = tray.set_icon(Some(icon));
+                let _ = tray.set_icon_as_template(true);
+            }
+        }
     }
 }

@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
   --text-body: 0.8125rem;
@@ -17,91 +17,39 @@
   --radius-group: 12px;
   --sidebar-width: 228px;
 
-  --color-window: #fbfbfc;
-  --color-sidebar: #f1f1f3;
+  --color-window: #ffffff;
+  --color-sidebar: #f7f7f8;
   --color-group: #ffffff;
-  --color-stage: #f6f6f8;
-  --color-group-border: #e4e4e8;
-  --color-separator: #ececef;
-  --color-text: #1d1d1f;
+  --color-stage: #fafafa;
+  --color-group-border: #e7e7ea;
+  --color-separator: #efeff1;
+  --color-text: #141414;
   --color-text-secondary: #62626a;
   --color-control: #ffffff;
-  --color-control-border: #cfcfd5;
-  --color-control-hover: #f4f4f6;
-  --color-segment-track: #e9e9ed;
+  --color-control-border: #d4d4d9;
+  --color-control-hover: #f5f5f6;
+  --color-segment-track: #efeff1;
   --color-indicator: #ffffff;
-  --color-accent: #0a64d6;
-  --color-accent-hover: #0857bd;
+  --color-accent: #141414;
+  --color-accent-hover: #2b2b2e;
   --color-accent-text: #ffffff;
   --color-destructive: #c4291c;
   --color-positive: #1f8a3b;
   --color-progress: #b06d00;
-  --color-neutral: #8e8e93;
-  --color-warning-bg: #fff6e3;
-  --color-warning-border: #ebc983;
-  --color-focus: #0a64d6;
-  --color-toggle-off: #d5d5da;
-  --shadow-indicator: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.08);
-  --shadow-lifted: 0 6px 18px rgba(0, 0, 0, 0.14);
-  --shadow-modal: 0 18px 48px rgba(0, 0, 0, 0.22);
+  --color-neutral: #9a9aa1;
+  --color-warning-bg: #fff7e6;
+  --color-warning-border: #ecd08f;
+  --color-focus: #141414;
+  --color-toggle-off: #dcdce0;
+  --shadow-indicator: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.07);
+  --shadow-lifted: 0 6px 18px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 18px 48px rgba(0, 0, 0, 0.16);
 }
 
 :root[data-platform="windows"] {
   --font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --radius-control: 5px;
   --radius-group: 8px;
-  --color-window: #f3f3f3;
-  --color-sidebar: #ebebeb;
-  --color-group: #fbfbfb;
-  --color-stage: #f7f7f7;
-  --color-group-border: #e5e5e5;
-  --color-accent: #005fb8;
-  --color-accent-hover: #0067c0;
-  --color-focus: #005fb8;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-window: #1c1c1e;
-    --color-sidebar: #232326;
-    --color-group: #2a2a2d;
-    --color-stage: #242427;
-    --color-group-border: #38383c;
-    --color-separator: #36363a;
-    --color-text: #f2f2f4;
-    --color-text-secondary: #a3a3ab;
-    --color-control: #3a3a3e;
-    --color-control-border: #4b4b51;
-    --color-control-hover: #434348;
-    --color-segment-track: #1f1f22;
-    --color-indicator: #34343a;
-    --color-accent: #3b8cf0;
-    --color-accent-hover: #5a9ff3;
-    --color-destructive: #ff6a5c;
-    --color-positive: #3ccf63;
-    --color-progress: #f0ad3e;
-    --color-neutral: #8e8e93;
-    --color-warning-bg: #3a2f17;
-    --color-warning-border: #7a5d23;
-    --color-focus: #5aa2ff;
-    --color-toggle-off: #505056;
-    --shadow-indicator: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-lifted: 0 8px 22px rgba(0, 0, 0, 0.5);
-    --shadow-modal: 0 18px 48px rgba(0, 0, 0, 0.6);
-  }
-
-  :root[data-platform="windows"] {
-    --color-window: #202020;
-    --color-sidebar: #1b1b1b;
-    --color-group: #2b2b2b;
-    --color-stage: #262626;
-    --color-group-border: #1d1d1d;
-    --color-indicator: #2d2d2d;
-    --color-accent: #60cdff;
-    --color-accent-hover: #7ad5ff;
-    --color-accent-text: #000000;
-    --color-focus: #60cdff;
-  }
 }
 
 @media (prefers-contrast: more) {

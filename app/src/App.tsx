@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { StatusSnapshot } from "@/bridge";
 import { StatusDot } from "@/components/controls";
 import { PageTransition, useSlidingIndicator } from "@/components/motion";
+import { Logo } from "@/components/Logo";
 import { NavIcon } from "@/components/NavIcon";
 import { I18nProvider, useI18n } from "@/i18n";
 import { useSettingsViewModel } from "@/viewmodels/useSettingsViewModel";
@@ -86,6 +87,10 @@ function Shell({ status }: { status: StatusSnapshot }) {
   return (
     <div className="shell">
       <nav className="sidebar" aria-label={t.appName} ref={navRef}>
+        <div className="brand">
+          <Logo size={22} />
+          <span className="brand-name">{t.appName}</span>
+        </div>
         <span className="nav-indicator" ref={indicatorRef} aria-hidden="true" />
         <button
           type="button"

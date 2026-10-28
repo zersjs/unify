@@ -18,3 +18,4 @@
 | mDNS | Blocked on some networks | Manual address |
 | WebView2 when the window is closed | Processes stay in memory | "Quit" from the tray exits completely |
 | UI languages | English (default) and Turkish | New locales are added as a table in `app/src/i18n/` typed against `en.ts` |
+| Theme | Light theme only | The interface follows the white brand theme regardless of the system dark mode |
