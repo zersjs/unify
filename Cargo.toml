@@ -37,7 +37,7 @@ rustls = { version = "0.23.46", default-features = false, features = ["ring", "s
 tokio-rustls = { version = "0.26.4", default-features = false, features = ["ring"] }
 rcgen = { version = "0.14.5", default-features = false, features = ["ring", "pem"] }
 spake2 = "0.4.0"
-sha2 = "0.10.9"
+sha2 = "0.11.1"
 hmac = "0.12.1"
 hex = "0.4.3"
 rand = "0.8.5"
