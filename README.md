@@ -22,16 +22,19 @@ Unify shares one **keyboard, mouse and text clipboard** between a macOS (Apple S
 
 ## Documentation
 
-1. [Technical assessment and decision record](docs/technical-assessment.md)
-2. [Architecture and protocol](docs/architecture-and-protocol.md)
-3. [Threat model](docs/threat-model.md)
-4. [Installation, building and removal](docs/installation-and-build.md)
-5. [Operating system permissions](docs/permissions.md)
-6. [Secure device pairing](docs/pairing.md)
-7. [Network and firewall](docs/network-and-firewall.md)
-8. [Troubleshooting](docs/troubleshooting.md)
-9. [Test plan](docs/test-plan.md)
-10. [Known limitations](docs/known-limitations.md)
+1. [Quick start](docs/quick-start.md)
+2. [CLI prototype guide (`unify-cli`)](docs/cli-guide.md)
+3. [Crate and configuration reference](docs/crate-reference.md)
+4. [Technical assessment and decision record](docs/technical-assessment.md)
+5. [Architecture and protocol](docs/architecture-and-protocol.md)
+6. [Threat model](docs/threat-model.md)
+7. [Installation, building and removal](docs/installation-and-build.md)
+8. [Operating system permissions](docs/permissions.md)
+9. [Secure device pairing](docs/pairing.md)
+10. [Network and firewall](docs/network-and-firewall.md)
+11. [Troubleshooting](docs/troubleshooting.md)
+12. [Test plan](docs/test-plan.md)
+13. [Known limitations](docs/known-limitations.md)
 
 ## Quick start
 
@@ -55,7 +58,8 @@ crates/unify-platform   Windows and macOS input, clipboard and display integrati
 crates/unify-runtime    actor that ties everything together
 crates/unify-cli        terminal prototype
 app/                    Tauri 2 shell (src-tauri) and React UI (src)
-docs/                   English documentation (Turkish in docs/tr)
+web/                    product landing page and unified static build
+docs/                   VitePress documentation UI and Markdown guides (EN / TR)
 ```
 
 ## Building
@@ -70,6 +74,12 @@ npm --prefix app ci
 
 ```bash
 npm --prefix app run tauri build -- --bundles nsis
+```
+
+To build the landing page and VitePress documentation site into `web/dist/`:
+
+```bash
+npm --prefix web run build
 ```
 
 See [installation-and-build.md](docs/installation-and-build.md) for macOS packaging, signing and CI.

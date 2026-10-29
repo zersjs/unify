@@ -3,8 +3,13 @@
 /app/dist
 /app/src-tauri/target
 /app/src-tauri/gen/schemas
+/web/node_modules
+/web/dist
+/web/.vitepress/cache
+/web/.vitepress/dist
 .env
 .env.*
+!/web/.env.example
 *.log
 .DS_Store
 Thumbs.db
