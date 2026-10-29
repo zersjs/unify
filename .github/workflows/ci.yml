@@ -14,6 +14,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  audit:
+    name: supply-chain audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Rust advisory check (Windows + macOS targets)
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check advisories
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Desktop frontend npm audit
+        working-directory: app
+        run: npm audit --audit-level=moderate
+
   verify:
     name: lint, typecheck, test (${{ matrix.os }})
     strategy:
@@ -53,7 +72,7 @@ jobs:
 
   bundle:
     name: bundle (${{ matrix.os }})
-    needs: verify
+    needs: [audit, verify]
     strategy:
       fail-fast: false
       matrix:

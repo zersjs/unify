@@ -1,0 +1,12 @@
+[graph]
+targets = [
+  "x86_64-pc-windows-msvc",
+  "aarch64-apple-darwin",
+]
+all-features = false
+
+[advisories]
+db-urls = ["https://github.com/RustSec/advisory-db"]
+yanked = "warn"
+unmaintained = "workspace"
+unsound = "all"
