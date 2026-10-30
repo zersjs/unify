@@ -50,14 +50,6 @@ pub struct PermissionReport {
     pub local_network: PermissionState,
 }
 
-impl PermissionReport {
-    pub fn all_granted(&self) -> bool {
-        [self.accessibility, self.input_monitoring]
-            .iter()
-            .all(|state| matches!(state, PermissionState::Granted | PermissionState::NotRequired))
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClipboardText {
     pub text: String,
@@ -169,6 +161,7 @@ pub trait Platform: Send + Sync + 'static {
     fn default_device_name(&self) -> String;
     fn permissions(&self) -> PermissionReport;
     fn request_permissions(&self);
+    fn reset_permissions(&self) -> Result<(), PlatformError>;
     fn open_permission_settings(&self, kind: PermissionKind) -> Result<(), PlatformError>;
     fn detect_iso_keyboard(&self) -> bool;
     fn parks_cursor_at_exit(&self) -> bool;

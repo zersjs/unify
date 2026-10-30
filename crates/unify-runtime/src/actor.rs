@@ -94,6 +94,8 @@ pub(crate) struct Actor {
     pub last_desktop_refresh: Instant,
     pub switcher: EdgeSwitcher,
     pub control: Control,
+    pub exit_point: Option<(i32, i32)>,
+    pub refused_until: Option<Instant>,
     pub remote_cursor: Option<RemoteCursor>,
     pub injected: PressedState,
     pub started: Instant,
@@ -182,6 +184,8 @@ impl Actor {
             last_desktop_refresh: now,
             switcher,
             control: Control::Local,
+            exit_point: None,
+            refused_until: None,
             remote_cursor: None,
             injected: PressedState::new(),
             started: now,
@@ -280,6 +284,13 @@ impl Actor {
                 self.platform.request_permissions();
                 self.refresh_permissions();
             }
+            Command::ResetPermissions => {
+                if let Err(err) = self.platform.reset_permissions() {
+                    tracing::warn!(error = %err, "permission reset failed");
+                    self.set_error("permission_reset_failed");
+                }
+                self.refresh_permissions();
+            }
             Command::OpenPermissionSettings(kind) => {
                 if self.platform.open_permission_settings(kind).is_err() {
                     self.set_error("permission_settings_unavailable");
@@ -357,7 +368,7 @@ impl Actor {
             self.permissions = report;
             self.dirty = true;
         }
-        if self.capture_state == CaptureState::PermissionRequired && report.all_granted() {
+        if self.capture_state == CaptureState::PermissionRequired {
             self.sync_capture();
         }
     }

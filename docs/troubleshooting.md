@@ -5,7 +5,8 @@
 | Stuck on **Waiting for connection** | Unify closed on the other computer; firewall; different networks; mDNS blocked | Start Unify on the other computer; follow [network-and-firewall.md](network-and-firewall.md); enter the address manually |
 | "The other computer does not recognise this device" | Pairing removed or identity reset on the other side | Remove the pairing on both sides and pair again |
 | "Code could not be verified" | Wrong code or wrong computer | Check code and address; after 5 failures create a new code |
-| "Permission required" on the Mac | Accessibility / Input Monitoring missing or lost after a rebuild | [permissions.md](permissions.md); remove and re-add the entry |
+| "Permission required" on the Mac although the switches are on | The switches belong to an older build | **Security & permissions → Reset permissions**, turn Unify on again, **Restart Unify** ([permissions.md](permissions.md)) |
+| Windows says the other computer is missing a permission and the pointer stays at the edge | The Mac refused control because it may not generate input | Same fix on the Mac |
 | Pointer does not cross the edge | Edge switching off; wrong position; mouse button held; corner guard | Check the display layout page; switching happens only with no button held |
 | Pointer bounces back and forth | Positions conflict on the two computers | Drag the other computer to the correct side on the Display layout page; the setting propagates to the other side automatically |
 | Control stuck on the other computer | Network outage, frozen app on the other side | Shortcut: Windows `Ctrl+Alt+Shift+Space`, Mac `Control+Option+Shift+Space`. After 5 s without a reply control returns automatically |

@@ -126,6 +126,7 @@ mod tests {
             Message::PairReply { identity, spake_message: vec![2; SPAKE_MESSAGE_LEN] },
             Message::PairConfirm { mac: [3; 32] },
             Message::PairResult { accepted: true },
+            Message::Refuse { reason: RefuseReason::PermissionMissing },
         ];
         for message in messages {
             roundtrip(message);

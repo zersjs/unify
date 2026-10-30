@@ -121,6 +121,16 @@ pub fn request_permissions(state: State<'_, AppState>) -> CommandResult {
 }
 
 #[tauri::command]
+pub fn reset_permissions(state: State<'_, AppState>) -> CommandResult {
+    Ok(state.runtime.reset_permissions()?)
+}
+
+#[tauri::command]
+pub fn restart_app(app: AppHandle) {
+    app.restart();
+}
+
+#[tauri::command]
 pub fn open_permission_settings(state: State<'_, AppState>, kind: String) -> CommandResult {
     let kind = match kind.as_str() {
         "accessibility" => PermissionKind::Accessibility,

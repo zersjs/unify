@@ -1,13 +1,18 @@
 use std::sync::Arc;
+use std::time::Duration;
 
+use tokio::time::Instant;
 use unify_core::geometry::ENTRY_INSET_PX;
 use unify_core::keys::translate_event;
 use unify_core::switcher::{CursorStep, EdgeDecision, RemoteCursor};
 use unify_platform::{CaptureEvent, InjectEvent, PlatformError};
-use unify_proto::{EntryPoint, InputEvent, Message, OsKind, Side};
+use unify_proto::{EntryPoint, InputEvent, Message, OsKind, RefuseReason, Side};
 
 use crate::actor::{Actor, Control, Event};
 use crate::status::CaptureState;
+
+const REFUSAL_BACKOFF: Duration = Duration::from_secs(3);
+const PEER_REFUSAL_CODES: [&str; 3] = ["peer_sharing_disabled", "peer_permission_missing", "peer_unavailable"];
 
 impl Actor {
     fn peer_os(&self) -> OsKind {
@@ -19,7 +24,10 @@ impl Actor {
     }
 
     fn can_control(&self) -> bool {
-        self.config.settings.input_sharing && self.session_ready() && self.control == Control::Local
+        self.config.settings.input_sharing
+            && self.session_ready()
+            && self.control == Control::Local
+            && !self.refused_until.is_some_and(|until| Instant::now() < until)
     }
 
     pub fn sync_capture(&mut self) {
@@ -58,23 +66,23 @@ impl Actor {
         self.dirty = true;
     }
 
-    fn ensure_injector(&mut self) -> bool {
+    fn ensure_injector(&mut self) -> Result<(), RefuseReason> {
         if self.injector.is_some() {
-            return true;
+            return Ok(());
         }
         match self.platform.injector(self.capture_shared.clone()) {
             Ok(injector) => {
                 self.injector = Some(injector);
-                true
+                Ok(())
             }
             Err(PlatformError::PermissionDenied(_)) => {
                 self.set_error("inject_permission");
-                false
+                Err(RefuseReason::PermissionMissing)
             }
             Err(err) => {
                 tracing::error!(error = %err, "input injector unavailable");
                 self.set_error("inject_failed");
-                false
+                Err(RefuseReason::Unavailable)
             }
         }
     }
@@ -127,12 +135,16 @@ impl Actor {
     }
 
     fn park_point(&self, exit: (i32, i32)) -> (i32, i32) {
+        match self.desktop.as_ref() {
+            Some(desktop) if !self.platform.parks_cursor_at_exit() => desktop.center(),
+            _ => self.point_inside_edge(exit),
+        }
+    }
+
+    fn point_inside_edge(&self, exit: (i32, i32)) -> (i32, i32) {
         let Some(desktop) = self.desktop.as_ref() else {
             return exit;
         };
-        if !self.platform.parks_cursor_at_exit() {
-            return desktop.center();
-        }
         let (x, y) = desktop.clamp(exit.0, exit.1);
         let inset = ENTRY_INSET_PX * 2;
         match self.config.settings.peer_side {
@@ -147,6 +159,10 @@ impl Actor {
         if !self.send_active(Message::Enter(entry)) {
             return;
         }
+        if self.last_error.as_ref().is_some_and(|error| PEER_REFUSAL_CODES.contains(&error.code)) {
+            self.last_error = None;
+        }
+        self.exit_point = Some(exit);
         let park = self.park_point(exit);
         self.capture_shared.enter_remote(park);
         if let Err(err) = self.platform.warp_cursor(park.0, park.1) {
@@ -238,13 +254,17 @@ impl Actor {
             }
             self.return_local(None);
         }
-        if !self.config.settings.input_sharing || !self.ensure_injector() {
-            self.send_active(Message::Release);
+        if !self.config.settings.input_sharing {
+            self.send_active(Message::Refuse { reason: RefuseReason::SharingDisabled });
+            return;
+        }
+        if let Err(reason) = self.ensure_injector() {
+            self.send_active(Message::Refuse { reason });
             return;
         }
         self.refresh_desktop();
         let Some(desktop) = self.desktop.as_ref() else {
-            self.send_active(Message::Release);
+            self.send_active(Message::Refuse { reason: RefuseReason::Unavailable });
             return;
         };
         let cursor = RemoteCursor::enter(desktop, entry, self.config.settings.peer_side);
@@ -278,6 +298,21 @@ impl Actor {
             }
             Control::Local => {}
         }
+    }
+
+    pub fn on_remote_refuse(&mut self, reason: RefuseReason) {
+        if self.control != Control::Controlling {
+            return;
+        }
+        let restore = self.exit_point.take().map(|exit| self.point_inside_edge(exit));
+        self.return_local(restore);
+        self.refused_until = Some(Instant::now() + REFUSAL_BACKOFF);
+        tracing::info!(?reason, "peer refused control");
+        self.set_error(match reason {
+            RefuseReason::SharingDisabled => "peer_sharing_disabled",
+            RefuseReason::PermissionMissing => "peer_permission_missing",
+            RefuseReason::Unavailable => "peer_unavailable",
+        });
     }
 
     pub fn on_remote_input(&mut self, event: InputEvent) {

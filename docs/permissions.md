@@ -17,7 +17,7 @@ Steps:
 
 Unify re-checks permissions every 3 seconds and starts input capture automatically once granted. Without permission the UI shows a warning and does not claim keyboard/mouse control works.
 
-With unsigned builds the code signature changes on every build, so macOS may not apply an earlier grant to a new build. Remove the Unify entry with **–** and add it again.
+With unsigned builds the code signature changes on every build, so macOS does not apply an earlier grant to a new build even though the switch still looks on. Use **Security & permissions → Reset permissions**, turn Unify on again in System Settings, then press **Restart Unify**. Doing the same by hand: remove the Unify entry with **–** and add it again.
 
 Keychain: on first launch macOS may ask to let Unify access the `dev.unify.desktop` item; choose **Always Allow**.
 

@@ -97,6 +97,8 @@ fn main() {
             commands::resync_clipboard,
             commands::release_control,
             commands::request_permissions,
+            commands::reset_permissions,
+            commands::restart_app,
             commands::open_permission_settings,
             commands::reset_identity,
             commands::clear_error,

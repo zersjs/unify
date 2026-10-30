@@ -22,7 +22,7 @@ Bağımlılık yönü: `proto ← core ← {security, net, platform} ← runtime
 - **macOS enjeksiyon iş parçacığı**: `CGEventSource` ve modifier durumunu tek iş parçacığında tutar.
 - **Tokio**: runtime aktörü, bağlantı okuyucu/yazıcı görevleri, dinleyici, keşif köprüsü.
 
-## Protokol (sürüm 1)
+## Protokol (sürüm 2)
 
 Her çerçeve `u32` big-endian uzunluk + postcard ile kodlanmış `Message`. En büyük çerçeve 64 KiB; sıfır uzunluk, fazla bayt, bozuk alan veya sınır dışı değer bağlantıyı kapatır.
 
@@ -34,6 +34,7 @@ Her çerçeve `u32` big-endian uzunluk + postcard ile kodlanmış `Message`. En 
 | `Enter` | kontrol eden → kontrol edilen | yüksek | Giriş noktası (kenar + oran veya merkez) |
 | `Leave` | kontrol edilen → kontrol eden | yüksek | İmleç dönüş kenarından çıktı, oran |
 | `Release` | iki yön | yüksek | Kontrol bitti / reddedildi; alıcı basılı tuşları bırakır |
+| `Refuse` | kontrol edilen → kontrol eden | yüksek | Kontrol kabul edilmedi, nedeniyle (paylaşım kapalı, izin eksik, kullanılamıyor); imleç kenara döner ve geçiş 3 sn durur |
 | `Input` | kontrol eden → kontrol edilen | yüksek | HID tuş kodu, göreli fare hareketi, düğme, tekerlek (120 = bir çentik) |
 | `ClipboardBegin` / `ClipboardChunk` | iki yön | düşük | Uzunluk + SHA-256, ardından en fazla 16 KiB parçalar |
 | `Goodbye` | iki yön | yüksek | Kapanış nedeni |

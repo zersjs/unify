@@ -532,6 +532,7 @@ impl Actor {
             Message::Enter(entry) => self.on_remote_enter(entry),
             Message::Leave { side, ratio } => self.on_remote_leave(side, ratio),
             Message::Release => self.on_remote_release(),
+            Message::Refuse { reason } => self.on_remote_refuse(reason),
             Message::Input(event) => self.on_remote_input(event),
             Message::ClipboardBegin { transfer_id, format: _, total_len, sha256 } => self.on_clipboard_begin(transfer_id, total_len, sha256),
             Message::ClipboardChunk { transfer_id, offset, data } => self.on_clipboard_chunk(transfer_id, offset, &data),

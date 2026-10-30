@@ -405,6 +405,12 @@ export function SecurityPage({ status, vm }: PageProps) {
               {t.settings.requestPermissions}
             </Button>
           </Row>
+          <Row label={t.settings.resetPermissions} detail={t.settings.resetPermissionsHelp}>
+            <div className="inline-controls">
+              <Button onClick={() => void vm.resetPermissions.run()}>{t.settings.resetPermissions}</Button>
+              <Button onClick={() => void vm.restartApp.run()}>{t.settings.restartApp}</Button>
+            </div>
+          </Row>
         </Group>
       ) : (
         <Group footer={t.settings.windowsLimits}>

@@ -10,6 +10,8 @@ export function useSettingsViewModel(status: StatusSnapshot) {
   const reconnect = useAction(() => bridge.reconnectNow());
   const resync = useAction(() => bridge.resyncClipboard());
   const requestPermissions = useAction(() => bridge.requestPermissions());
+  const resetPermissions = useAction(() => bridge.resetPermissions());
+  const restartApp = useAction(() => bridge.restartApp());
   const openPermissionSettings = useAction((kind: PermissionKind) => bridge.openPermissionSettings(kind));
   const openLogs = useAction(() => bridge.openLogFolder());
   const [diagnostics, setDiagnostics] = useState<string | null>(null);
@@ -29,6 +31,8 @@ export function useSettingsViewModel(status: StatusSnapshot) {
     reconnect.error ??
     resync.error ??
     requestPermissions.error ??
+    resetPermissions.error ??
+    restartApp.error ??
     openPermissionSettings.error ??
     openLogs.error ??
     loadDiagnostics.error;
@@ -43,6 +47,8 @@ export function useSettingsViewModel(status: StatusSnapshot) {
     reconnect,
     resync,
     requestPermissions,
+    resetPermissions,
+    restartApp,
     openPermissionSettings,
     openLogs,
     diagnostics,

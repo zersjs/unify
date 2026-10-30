@@ -55,6 +55,7 @@ pub(crate) enum Command {
     ResyncClipboard,
     ReleaseControl,
     RequestPermissions,
+    ResetPermissions,
     OpenPermissionSettings(PermissionKind),
     ResetIdentity(Reply),
     ClearError,
@@ -128,6 +129,10 @@ impl RuntimeHandle {
 
     pub fn request_permissions(&self) -> Result<(), RuntimeError> {
         self.send(Command::RequestPermissions)
+    }
+
+    pub fn reset_permissions(&self) -> Result<(), RuntimeError> {
+        self.send(Command::ResetPermissions)
     }
 
     pub fn open_permission_settings(&self, kind: PermissionKind) -> Result<(), RuntimeError> {

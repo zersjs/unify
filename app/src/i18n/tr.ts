@@ -147,6 +147,10 @@ export const tr: Strings = {
     inputMonitoring: "Giriş izleme",
     localNetwork: "Yerel ağ",
     requestPermissions: "İzin iste",
+    resetPermissions: "İzinleri sıfırla",
+    resetPermissionsHelp:
+      "Anahtarlar açık olduğu hâlde Unify izin istiyorsa bunlar eski bir sürüme ait olabilir. Sıfırlayın, Sistem Ayarları'nda Unify'ı yeniden açın ve uygulamayı yeniden başlatın.",
+    restartApp: "Unify'ı yeniden başlat",
     openSettings: "Sistem Ayarlarını aç",
     windowsLimits:
       "Windows; kilit ekranına, UAC güvenli masaüstüne ve yönetici olarak çalışan pencerelere normal bir uygulamanın giriş göndermesine izin vermez. Unify bu sınırları aşmaya çalışmaz.",
@@ -218,7 +222,11 @@ export const tr: Strings = {
     clipboard_read_failed: "Pano okunamadı.",
     clipboard_write_failed: "Pano yazılamadı.",
     clipboard_watch_failed: "Pano değişiklikleri izlenemiyor.",
-    peer_released_control: "Diğer bilgisayar kontrolü kabul etmedi veya geri aldı.",
+    peer_released_control: "Diğer bilgisayar kontrolü geri aldı.",
+    peer_sharing_disabled: "Diğer bilgisayarda klavye ve fare paylaşımı kapalı.",
+    peer_permission_missing: "Diğer bilgisayarda giriş üretme izni eksik. Mac ise orada Güvenlik ve izinler sayfasını açın.",
+    peer_unavailable: "Diğer bilgisayar kontrolü kabul edemedi.",
+    permission_reset_failed: "İzinler sıfırlanamadı.",
     permission_settings_unavailable: "Bu sistemde izin ayarları sayfası yok.",
     autostart_failed: "Otomatik başlatma ayarı uygulanamadı.",
     unknown: "Beklenmeyen bir hata oluştu.",

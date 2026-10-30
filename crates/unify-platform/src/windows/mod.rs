@@ -52,6 +52,10 @@ impl Platform for WindowsPlatform {
 
     fn request_permissions(&self) {}
 
+    fn reset_permissions(&self) -> Result<(), PlatformError> {
+        Err(PlatformError::Unsupported)
+    }
+
     fn open_permission_settings(&self, _kind: PermissionKind) -> Result<(), PlatformError> {
         Err(PlatformError::Unsupported)
     }

@@ -13,7 +13,7 @@ Unify, bir macOS (Apple Silicon) bilgisayar ile bir Windows 11 bilgisayar arası
 | Bileşen | Durum |
 |---|---|
 | Windows 11 | Derlendi, kurulum paketi üretildi, otomatik testler geçti, uygulama çalıştırıldı |
-| macOS (M2) | Kod yazıldı ve `aarch64-apple-darwin` için tip denetiminden geçti; **gerçek Mac'te henüz çalıştırılmadı** |
+| macOS (Apple Silicon) | CI'da `macos-14` üzerinde derleniyor ve testler geçiyor; eşleştirme ve bağlantı gerçek MacBook Air ile doğrulandı; kontrol devri doğrulanıyor |
 | Gerçek donanım kabul testleri | Bekliyor ([test planı](09-test-plani.md)) |
 
 ## Belgeler

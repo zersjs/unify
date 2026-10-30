@@ -17,7 +17,7 @@ Adımlar:
 
 Unify izinleri 3 saniyede bir yeniden kontrol eder; izin verildiğinde giriş yakalamayı kendiliğinden başlatır. İzin yokken arayüz "İzin gerekiyor" uyarısı gösterir ve klavye/fare kontrolü yapılabildiğini iddia etmez.
 
-İmzasız derlemelerde kod imzası her derlemede değiştiği için macOS eski izni yeni derlemeye uygulamayabilir. Bu durumda listedeki Unify kaydını **–** ile kaldırıp yeniden ekleyin.
+İmzasız derlemelerde kod imzası her derlemede değiştiği için macOS, anahtar açık görünse bile eski izni yeni derlemeye uygulamaz. **Güvenlik ve izinler → İzinleri sıfırla** ile sıfırlayın, Sistem Ayarları'nda Unify'ı yeniden açın ve **Unify'ı yeniden başlat** düğmesine basın. Elle yapmak için listedeki Unify kaydını **–** ile kaldırıp yeniden ekleyin.
 
 Anahtar Zinciri: ilk açılışta macOS, Unify'ın `dev.unify.desktop` kaydına erişmesi için onay isteyebilir; **Her Zaman İzin Ver** seçin.
 

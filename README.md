@@ -17,7 +17,7 @@ Unify shares one **keyboard, mouse and text clipboard** between a macOS (Apple S
 | Component | State |
 |---|---|
 | Windows 11 | Builds, installer produced, automated tests pass, application launched and inspected |
-| macOS (M2) | Implemented and type-checked for `aarch64-apple-darwin`; **not yet run on a real Mac** |
+| macOS (Apple Silicon) | Builds and tests pass in CI on `macos-14`; pairing and connection verified with a real MacBook Air; control hand-over still being verified |
 | Hardware acceptance tests | Pending ([test plan](docs/test-plan.md)) |
 
 ## Documentation

@@ -93,6 +93,13 @@ pub enum GoodbyeReason {
     PairingRejected,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum RefuseReason {
+    SharingDisabled,
+    PermissionMissing,
+    Unavailable,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Hello {
     pub protocol_version: u16,
@@ -134,6 +141,7 @@ pub enum Message {
     PairReply { identity: PairIdentity, spake_message: Vec<u8> },
     PairConfirm { mac: [u8; 32] },
     PairResult { accepted: bool },
+    Refuse { reason: RefuseReason },
 }
 
 impl Message {
@@ -154,6 +162,7 @@ impl Message {
             Message::PairReply { .. } => "pair_reply",
             Message::PairConfirm { .. } => "pair_confirm",
             Message::PairResult { .. } => "pair_result",
+            Message::Refuse { .. } => "refuse",
         }
     }
 

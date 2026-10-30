@@ -22,7 +22,7 @@ Dependency direction: `proto ← core ← {security, net, platform} ← runtime 
 - **macOS injection thread**: owns the `CGEventSource` and modifier state.
 - **Tokio**: runtime actor, per-connection reader/writer tasks, listener, discovery bridge.
 
-## Protocol (version 1)
+## Protocol (version 2)
 
 Each frame is a big-endian `u32` length followed by a postcard-encoded `Message`. The largest frame is 64 KiB; a zero length, trailing bytes, a malformed field or an out-of-range value closes the connection.
 
@@ -34,6 +34,7 @@ Each frame is a big-endian `u32` length followed by a postcard-encoded `Message`
 | `Enter` | controller → controlled | high | Entry point (edge + ratio, or centre) |
 | `Leave` | controlled → controller | high | Pointer left through the return edge, with ratio |
 | `Release` | both | high | Control ended / refused; the receiver releases held keys |
+| `Refuse` | controlled → controller | high | Control not accepted, with reason (sharing off, permission missing, unavailable); the pointer returns to the edge and switching pauses for 3 s |
 | `Input` | controller → controlled | high | HID key usage, relative mouse motion, button, wheel (120 = one notch) |
 | `ClipboardBegin` / `ClipboardChunk` | both | low | Length + SHA-256, then chunks of at most 16 KiB |
 | `Goodbye` | both | high | Close reason |

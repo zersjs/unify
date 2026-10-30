@@ -146,6 +146,10 @@ export const en = {
     inputMonitoring: "Input Monitoring",
     localNetwork: "Local Network",
     requestPermissions: "Request permission",
+    resetPermissions: "Reset permissions",
+    resetPermissionsHelp:
+      "Use this if Unify still asks although its switches are on: they may belong to an older build. Reset, turn Unify on again in System Settings, then restart.",
+    restartApp: "Restart Unify",
     openSettings: "Open System Settings",
     windowsLimits:
       "Windows does not let a normal application send input to the lock screen, the UAC secure desktop or windows running as administrator. Unify does not try to bypass these limits.",
@@ -217,7 +221,11 @@ export const en = {
     clipboard_read_failed: "The clipboard could not be read.",
     clipboard_write_failed: "The clipboard could not be written.",
     clipboard_watch_failed: "Clipboard changes cannot be monitored.",
-    peer_released_control: "The other computer declined or took back control.",
+    peer_released_control: "The other computer took back control.",
+    peer_sharing_disabled: "Keyboard and mouse sharing is turned off on the other computer.",
+    peer_permission_missing: "The other computer is missing the permission to generate input. On a Mac, open Security & permissions there.",
+    peer_unavailable: "The other computer could not accept control.",
+    permission_reset_failed: "Permissions could not be reset.",
     permission_settings_unavailable: "This system has no permission settings page.",
     autostart_failed: "The start-at-login setting could not be applied.",
     unknown: "An unexpected error occurred.",

@@ -288,10 +288,39 @@ async fn peer_with_input_sharing_disabled_refuses_control() {
     let (mac, win) = connected_pair("refuse").await;
     win.handle.update_settings(SettingsPatch { input_sharing: Some(false), ..Default::default() }).await.unwrap();
     mac.platform.emit_capture(CaptureEvent::Hotkey);
-    wait_for(&mac, "refusal", |s| s.last_error.as_ref().is_some_and(|e| e.code == "peer_released_control")).await;
+    wait_for(&mac, "refusal", |s| s.last_error.as_ref().is_some_and(|e| e.code == "peer_sharing_disabled")).await;
     assert_eq!(mac.handle.status().control, ControlState::Local);
     assert!(win.platform.injected().is_empty());
     cleanup(vec![mac, win]).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn refusal_for_missing_permission_restores_pointer_at_the_edge() {
+    let (mac, win) = connected_pair("refuse-permission").await;
+    win.platform.set_injection_denied(true);
+    mac.platform.emit_capture(CaptureEvent::LocalMotion { x: 1000, y: 540 });
+    mac.platform.emit_capture(CaptureEvent::LocalMotion { x: 1919, y: 540 });
+    wait_for(&mac, "refusal", |s| s.last_error.as_ref().is_some_and(|e| e.code == "peer_permission_missing")).await;
+    assert_eq!(mac.handle.status().control, ControlState::Local);
+    assert!(!mac.platform.capture_shared().unwrap().is_remote());
+    assert_eq!(mac.platform.warps().last().copied(), Some((1915, 540)));
+    mac.platform.emit_capture(CaptureEvent::LocalMotion { x: 1000, y: 540 });
+    mac.platform.emit_capture(CaptureEvent::LocalMotion { x: 1919, y: 540 });
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    assert_eq!(mac.platform.warps().len(), 2, "no repeat attempt during the refusal backoff");
+    cleanup(vec![mac, win]).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn capture_starts_after_permission_is_granted_while_running() {
+    let platform = FakePlatform::new(OsKind::MacOs, "denied", 1920, 1080);
+    platform.set_capture_denied(true);
+    let secrets: Arc<dyn SecretStore> = Arc::new(MemorySecretStore::default());
+    let node = start_node(test_dir("capture-retry"), platform, secrets);
+    wait_for(&node, "permission required", |s| s.capture == unify_runtime::CaptureState::PermissionRequired).await;
+    node.platform.set_capture_denied(false);
+    wait_for(&node, "capture running", |s| s.capture == unify_runtime::CaptureState::Running).await;
+    cleanup(vec![node]).await;
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]

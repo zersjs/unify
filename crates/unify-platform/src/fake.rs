@@ -17,6 +17,8 @@ struct FakeState {
     injected: Vec<InjectEvent>,
     cursor: (i32, i32),
     warps: Vec<(i32, i32)>,
+    injection_denied: bool,
+    capture_denied: bool,
 }
 
 #[derive(Clone)]
@@ -81,6 +83,14 @@ impl FakePlatform {
         self.with(|state| state.injected.clear());
     }
 
+    pub fn set_injection_denied(&self, denied: bool) {
+        self.with(|state| state.injection_denied = denied);
+    }
+
+    pub fn set_capture_denied(&self, denied: bool) {
+        self.with(|state| state.capture_denied = denied);
+    }
+
     pub fn warps(&self) -> Vec<(i32, i32)> {
         self.with(|state| state.warps.clone())
     }
@@ -126,6 +136,10 @@ impl Platform for FakePlatform {
 
     fn request_permissions(&self) {}
 
+    fn reset_permissions(&self) -> Result<(), PlatformError> {
+        Err(PlatformError::Unsupported)
+    }
+
     fn open_permission_settings(&self, _kind: PermissionKind) -> Result<(), PlatformError> {
         Err(PlatformError::Unsupported)
     }
@@ -155,6 +169,9 @@ impl Platform for FakePlatform {
     }
 
     fn start_capture(&self, shared: Arc<CaptureShared>, sink: CaptureSink) -> Result<Box<dyn StopHandle>, PlatformError> {
+        if self.with(|state| state.capture_denied) {
+            return Err(PlatformError::PermissionDenied("accessibility"));
+        }
         self.with(|state| {
             state.capture_sink = Some(sink);
             state.capture_shared = Some(shared);
@@ -163,6 +180,9 @@ impl Platform for FakePlatform {
     }
 
     fn injector(&self, _shared: Arc<CaptureShared>) -> Result<Arc<dyn Injector>, PlatformError> {
+        if self.with(|state| state.injection_denied) {
+            return Err(PlatformError::PermissionDenied("accessibility"));
+        }
         Ok(Arc::new(FakeInjector { state: self.state.clone() }))
     }
 

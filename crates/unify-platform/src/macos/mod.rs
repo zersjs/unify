@@ -4,6 +4,7 @@ mod inject;
 mod tap;
 
 use std::process::Command;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use core_graphics::display::CGDisplay;
@@ -18,13 +19,23 @@ use crate::{
     PlatformError, StopHandle,
 };
 
+const BUNDLE_IDENTIFIER: &str = "dev.unify.desktop";
+const TCC_SERVICES: [&str; 2] = ["Accessibility", "ListenEvent"];
+
 pub struct MacPlatform {
     injector: Mutex<Option<Arc<inject::MacInjector>>>,
+    tap_active: AtomicBool,
 }
 
 impl MacPlatform {
     pub fn new() -> Self {
-        Self { injector: Mutex::new(None) }
+        Self { injector: Mutex::new(None), tap_active: AtomicBool::new(false) }
+    }
+}
+
+impl MacPlatform {
+    fn can_post_events(&self) -> bool {
+        unsafe { ffi::AXIsProcessTrusted() || ffi::CGPreflightPostEventAccess() }
     }
 }
 
@@ -60,10 +71,11 @@ impl Platform for MacPlatform {
     }
 
     fn permissions(&self) -> PermissionReport {
-        let (accessibility, listen) = unsafe { (ffi::AXIsProcessTrusted(), ffi::CGPreflightListenEventAccess()) };
+        let tap_active = self.tap_active.load(Ordering::Relaxed);
+        let listen = unsafe { ffi::CGPreflightListenEventAccess() };
         PermissionReport {
-            accessibility: state(accessibility),
-            input_monitoring: state(listen),
+            accessibility: state(tap_active || self.can_post_events()),
+            input_monitoring: state(tap_active || listen),
             local_network: PermissionState::Unknown,
         }
     }
@@ -77,6 +89,20 @@ impl Platform for MacPlatform {
                 ffi::CGRequestPostEventAccess();
             }
         }
+    }
+
+    fn reset_permissions(&self) -> Result<(), PlatformError> {
+        for service in TCC_SERVICES {
+            let status = Command::new("/usr/bin/tccutil")
+                .args(["reset", service, BUNDLE_IDENTIFIER])
+                .status()
+                .map_err(|err| PlatformError::Os(err.to_string()))?;
+            if !status.success() {
+                return Err(PlatformError::Os(format!("tccutil reset {service} failed: {status}")));
+            }
+        }
+        self.request_permissions();
+        Ok(())
     }
 
     fn open_permission_settings(&self, kind: PermissionKind) -> Result<(), PlatformError> {
@@ -132,14 +158,13 @@ impl Platform for MacPlatform {
     }
 
     fn start_capture(&self, shared: Arc<CaptureShared>, sink: CaptureSink) -> Result<Box<dyn StopHandle>, PlatformError> {
-        if !unsafe { ffi::CGPreflightListenEventAccess() } {
-            return Err(PlatformError::PermissionDenied("input_monitoring"));
-        }
-        Ok(Box::new(tap::EventTapThread::start(shared, sink)?))
+        let thread = tap::EventTapThread::start(shared, sink)?;
+        self.tap_active.store(true, Ordering::Relaxed);
+        Ok(Box::new(thread))
     }
 
     fn injector(&self, shared: Arc<CaptureShared>) -> Result<Arc<dyn Injector>, PlatformError> {
-        if !unsafe { ffi::CGPreflightPostEventAccess() } {
+        if !self.tap_active.load(Ordering::Relaxed) && !self.can_post_events() {
             return Err(PlatformError::PermissionDenied("accessibility"));
         }
         let mut guard = self.injector.lock().map_err(|_| PlatformError::NotRunning)?;
