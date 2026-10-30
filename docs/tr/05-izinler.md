@@ -6,6 +6,7 @@
 |---|---|---|
 | **Erişilebilirlik** | Diğer bilgisayardan gelen tuş ve fare olaylarını üretmek (`CGEventPost`) ve kontrol diğer bilgisayardayken yerel olayları yutmak (filtreleyen `CGEventTap`) | Mac kontrol edilemez; Mac'ten Windows'a geçişte yerel olaylar engellenemez |
 | **Giriş İzleme** | Klavye ve fare olaylarını dinlemek | Mac'in klavye/faresiyle Windows kontrol edilemez |
+| **Ekran Kaydı** | Mac ekranını Windows'ta bir pencerede göstermek | Ekran gösterilemez; Windows eksik izni bildirir |
 | **Yerel Ağ** (macOS 15+) | Aynı ağdaki Windows bilgisayara bağlanmak ve mDNS ile bulmak | Bağlantı kurulamaz; sistem ilk bağlantıda izin sorar |
 
 Adımlar:

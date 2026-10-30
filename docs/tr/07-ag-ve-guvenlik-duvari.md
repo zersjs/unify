@@ -3,6 +3,7 @@
 | Trafik | Protokol / port | Yön | Kapsam |
 |---|---|---|---|
 | Unify oturumu | TCP 47823 (Ağ ve bağlantı ayarından değiştirilebilir) | Gelen ve giden | Yalnızca yerel ağ; TLS 1.3 |
+| Ekran görüntüleme | UDP, izleyen bilgisayarda oturum başına rastgele port | İzleyene gelen | Yalnızca yerel ağ; oturum anahtarlı AES-256-GCM |
 | Cihaz keşfi | UDP 5353, çok noktaya yayın 224.0.0.251 / ff02::fb (mDNS) | Gelen ve giden | Yalnızca yerel ağ; isteğe bağlı |
 
 İnternet bağlantısı gerekmez. Unify dışarıya hiçbir sunucuya bağlanmaz.

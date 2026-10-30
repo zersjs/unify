@@ -97,6 +97,7 @@ pub enum GoodbyeReason {
 pub enum RefuseReason {
     SharingDisabled,
     PermissionMissing,
+    ScreenPermissionMissing,
     Unavailable,
 }
 
@@ -142,6 +143,15 @@ pub enum Message {
     PairConfirm { mac: [u8; 32] },
     PairResult { accepted: bool },
     Refuse { reason: RefuseReason },
+    StreamRequest { session_id: u64, udp_port: u16, width: u32, height: u32, fps: u16 },
+    StreamAccepted { session_id: u64, width: u32, height: u32 },
+    StreamRefused { session_id: u64, reason: RefuseReason },
+    StreamStop { session_id: u64 },
+    StreamKeyframe { session_id: u64 },
+    StreamClockPing { sent_us: u64 },
+    StreamClockPong { sent_us: u64, peer_us: u64 },
+    ViewerPointer { x: u16, y: u16 },
+    ViewerRelease,
 }
 
 impl Message {
@@ -163,6 +173,15 @@ impl Message {
             Message::PairConfirm { .. } => "pair_confirm",
             Message::PairResult { .. } => "pair_result",
             Message::Refuse { .. } => "refuse",
+            Message::StreamRequest { .. } => "stream_request",
+            Message::StreamAccepted { .. } => "stream_accepted",
+            Message::StreamRefused { .. } => "stream_refused",
+            Message::StreamStop { .. } => "stream_stop",
+            Message::StreamKeyframe { .. } => "stream_keyframe",
+            Message::StreamClockPing { .. } => "stream_clock_ping",
+            Message::StreamClockPong { .. } => "stream_clock_pong",
+            Message::ViewerPointer { .. } => "viewer_pointer",
+            Message::ViewerRelease => "viewer_release",
         }
     }
 
@@ -173,6 +192,24 @@ impl Message {
                 validate_device_name(&hello.device_name)?;
                 if hello.app_version.len() > 32 {
                     return Err(ProtoError::Invalid("app_version"));
+                }
+                Ok(())
+            }
+            Message::ViewerPointer { x, y } => {
+                if *x > RATIO_SCALE || *y > RATIO_SCALE {
+                    return Err(ProtoError::Invalid("ratio"));
+                }
+                Ok(())
+            }
+            Message::StreamRequest { udp_port, width, height, fps, .. } => {
+                if *udp_port == 0 || *width == 0 || *height == 0 || *fps == 0 {
+                    return Err(ProtoError::Invalid("stream_request"));
+                }
+                Ok(())
+            }
+            Message::StreamAccepted { width, height, .. } => {
+                if *width == 0 || *height == 0 {
+                    return Err(ProtoError::Invalid("stream_accepted"));
                 }
                 Ok(())
             }

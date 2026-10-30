@@ -3,6 +3,7 @@ mod clipboard_flow;
 mod control;
 mod pairing_flow;
 mod session;
+mod stream_flow;
 pub mod status;
 
 use std::net::IpAddr;
@@ -58,6 +59,8 @@ pub(crate) enum Command {
     ResetPermissions,
     OpenPermissionSettings(PermissionKind),
     ResetIdentity(Reply),
+    StartViewer(Reply),
+    StopViewer,
     ClearError,
     Shutdown(oneshot::Sender<()>),
 }
@@ -141,6 +144,14 @@ impl RuntimeHandle {
 
     pub async fn reset_identity(&self) -> Result<(), RuntimeError> {
         self.request(Command::ResetIdentity).await
+    }
+
+    pub async fn start_viewer(&self) -> Result<(), RuntimeError> {
+        self.request(Command::StartViewer).await
+    }
+
+    pub fn stop_viewer(&self) -> Result<(), RuntimeError> {
+        self.send(Command::StopViewer)
     }
 
     pub fn clear_error(&self) -> Result<(), RuntimeError> {

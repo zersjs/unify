@@ -1,6 +1,7 @@
 mod clipboard;
 mod ffi;
 mod inject;
+mod screen;
 mod tap;
 
 use std::process::Command;
@@ -15,12 +16,12 @@ use unify_core::geometry::{Desktop, Rect};
 use unify_proto::OsKind;
 
 use crate::{
-    CaptureShared, CaptureSink, ChangeSink, ClipboardText, Injector, PermissionKind, PermissionReport, PermissionState, Platform,
-    PlatformError, StopHandle,
+    CaptureShared, CaptureSink, ChangeSink, ClipboardText, FrameSink, Injector, PermissionKind, PermissionReport, PermissionState, Platform,
+    PlatformError, ScreenCapture, ScreenSettings, StopHandle, Viewer, ViewerSink,
 };
 
 const BUNDLE_IDENTIFIER: &str = "dev.unify.desktop";
-const TCC_SERVICES: [&str; 2] = ["Accessibility", "ListenEvent"];
+const TCC_SERVICES: [&str; 3] = ["Accessibility", "ListenEvent", "ScreenCapture"];
 
 pub struct MacPlatform {
     injector: Mutex<Option<Arc<inject::MacInjector>>>,
@@ -186,5 +187,21 @@ impl Platform for MacPlatform {
 
     fn write_clipboard(&self, text: &str) -> Result<(), PlatformError> {
         clipboard::write_text(text)
+    }
+
+    fn start_screen_capture(&self, settings: ScreenSettings, sink: FrameSink) -> Result<Box<dyn ScreenCapture>, PlatformError> {
+        Ok(Box::new(screen::MacScreenCapture::start(settings, sink)?))
+    }
+
+    fn start_viewer(&self, _title: &str, _stream: (u32, u32), _sink: ViewerSink) -> Result<Box<dyn Viewer>, PlatformError> {
+        Err(PlatformError::Unsupported)
+    }
+
+    fn match_display_mode(&self, width: u32, height: u32) -> Result<(u32, u32), PlatformError> {
+        screen::match_display_mode(width, height)
+    }
+
+    fn restore_display_mode(&self) {
+        screen::restore_display_mode();
     }
 }

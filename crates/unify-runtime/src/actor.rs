@@ -15,17 +15,22 @@ use unify_core::keys::PressedState;
 use unify_core::switcher::{EdgeSwitchConfig, EdgeSwitcher, RemoteCursor};
 use unify_core::{PING_INTERVAL_MS, SLEEP_GAP_MS};
 use unify_net::{DiscoveredDevice, Discovery, DiscoveryEvent, PeerInfo, SessionStream};
-use unify_platform::{CaptureEvent, CaptureShared, ClipboardText, Injector, PermissionState, Platform, StopHandle};
+use unify_platform::{CaptureEvent, CaptureShared, ClipboardText, Injector, PermissionState, Platform, StopHandle, ViewerEvent};
 use unify_proto::{Message, OsKind};
 use unify_security::{DeviceIdentity, IdentityOutcome, IdentityStore};
 
 use crate::pairing_flow::PairingActivity;
 use crate::session::{Conn, ConnId, Direction, Purpose};
 use crate::status::*;
+use crate::stream_flow::{SharingResult, SharingSession, ViewerSession};
 use crate::{Command, RuntimeError, RuntimeHandle, RuntimeOptions, APP_VERSION};
 
 pub(crate) const DESKTOP_REFRESH_MS: u64 = 2_000;
 pub(crate) const PERMISSION_REFRESH_MS: u64 = 3_000;
+
+pub(crate) fn now_us() -> u64 {
+    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_micros() as u64).unwrap_or(0)
+}
 
 pub(crate) fn now_ms() -> u64 {
     SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0)
@@ -44,6 +49,9 @@ pub(crate) enum Event {
     ConnMessage { conn: ConnId, message: Message },
     ConnClosed { conn: ConnId, reason: String },
     ListenerFailed(String),
+    Viewer(ViewerEvent),
+    StreamKeyframeNeeded,
+    SharingStarted { session_id: u64, result: SharingResult },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,6 +104,8 @@ pub(crate) struct Actor {
     pub control: Control,
     pub exit_point: Option<(i32, i32)>,
     pub refused_until: Option<Instant>,
+    pub viewing: Option<ViewerSession>,
+    pub sharing: Option<SharingSession>,
     pub remote_cursor: Option<RemoteCursor>,
     pub injected: PressedState,
     pub started: Instant,
@@ -186,6 +196,8 @@ impl Actor {
             control: Control::Local,
             exit_point: None,
             refused_until: None,
+            viewing: None,
+            sharing: None,
             remote_cursor: None,
             injected: PressedState::new(),
             started: now,
@@ -299,6 +311,10 @@ impl Actor {
             Command::ResetIdentity(reply) => {
                 let _ = reply.send(self.reset_identity());
             }
+            Command::StartViewer(reply) => {
+                let _ = reply.send(self.start_viewer().await);
+            }
+            Command::StopViewer => self.stop_viewer(true),
             Command::ClearError => self.last_error = None,
             Command::Shutdown(_) => {}
         }
@@ -317,6 +333,9 @@ impl Actor {
             Event::HandshakeFailed { purpose, outbound, error } => self.on_handshake_failed(purpose, outbound, &error),
             Event::ConnMessage { conn, message } => self.on_conn_message(conn, message),
             Event::ConnClosed { conn, reason } => self.on_conn_closed(conn, &reason),
+            Event::Viewer(event) => self.on_viewer_event(event),
+            Event::StreamKeyframeNeeded => self.request_stream_keyframe(),
+            Event::SharingStarted { session_id, result } => self.on_sharing_started(session_id, result),
             Event::ListenerFailed(error) => {
                 tracing::error!(error = %error, "listener stopped");
                 self.listener = None;
@@ -340,6 +359,7 @@ impl Actor {
             self.refresh_permissions();
         }
         self.heartbeat(now);
+        self.stream_tick(now);
         self.expire_pairing(now);
         self.dirty = true;
     }
@@ -495,6 +515,7 @@ impl Actor {
     }
 
     async fn shutdown(&mut self) {
+        self.stop_streams(true);
         self.release_control_everywhere();
         let ids: Vec<ConnId> = self.conns.keys().copied().collect();
         for id in ids {
@@ -601,6 +622,7 @@ impl Actor {
                 Control::Controlled => ControlState::Controlled,
             },
             capture: self.capture_state,
+            stream: self.stream_status(),
             clipboard: ClipboardStatus {
                 activity: self.clipboard_activity,
                 last_transfer_ms: self.last_transfer_ms,
@@ -672,6 +694,7 @@ fn placeholder_snapshot() -> StatusSnapshot {
         connection: ConnectionStatus { state: ConnectionState::NotPaired, attempt: 0, rtt_ms: None, since_ms: 0, remote_address: None, next_retry_ms: None },
         control: ControlState::Local,
         capture: CaptureState::Disabled,
+        stream: StreamStatus { state: StreamState::Idle, width: 0, height: 0, fps: 0, latency_p50_us: None, latency_p99_us: None, dropped_frames: 0 },
         clipboard: ClipboardStatus { activity: ClipboardActivity::Idle, last_transfer_ms: None, last_direction: None, last_skip: None },
         permissions: PermissionsStatus { accessibility: "unknown", input_monitoring: "unknown", local_network: "unknown" },
         pairing: None,

@@ -5,7 +5,7 @@ pub mod message;
 pub use frame::{decode_payload, encode_frame, FrameDecoder, ProtoError, FRAME_HEADER_LEN, MAX_FRAME_LEN};
 pub use message::*;
 
-pub const PROTOCOL_VERSION: u16 = 2;
+pub const PROTOCOL_VERSION: u16 = 3;
 pub const CLIPBOARD_CHUNK_LEN: usize = 16 * 1024;
 pub const MAX_CLIPBOARD_TEXT_LEN: usize = 16 * 1024 * 1024;
 pub const MAX_DEVICE_NAME_CHARS: usize = 64;

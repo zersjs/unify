@@ -22,7 +22,7 @@ Bağımlılık yönü: `proto ← core ← {security, net, platform} ← runtime
 - **macOS enjeksiyon iş parçacığı**: `CGEventSource` ve modifier durumunu tek iş parçacığında tutar.
 - **Tokio**: runtime aktörü, bağlantı okuyucu/yazıcı görevleri, dinleyici, keşif köprüsü.
 
-## Protokol (sürüm 2)
+## Protokol (sürüm 3)
 
 Her çerçeve `u32` big-endian uzunluk + postcard ile kodlanmış `Message`. En büyük çerçeve 64 KiB; sıfır uzunluk, fazla bayt, bozuk alan veya sınır dışı değer bağlantıyı kapatır.
 
@@ -68,6 +68,12 @@ TLS kuruldu ─┬─ giden oturum ── Hello gönder ── AwaitHello ──
 | İki taraf aynı anda `Enter` | — | Cihaz kimliği küçük olan kontrol eden olarak kalır |
 
 Kenarda takılma ve sonsuz geçiş, "silahlanma" kuralıyla önlenir: dönüşten sonra imleç kenardan ayrılmadan yeniden geçiş yapılmaz.
+
+### Ekran görüntüleme
+
+Mac ana ekranını ScreenCaptureKit ile yakalar ve VideoToolbox ile düşük gecikmeli H.264 kodlar. Kareler en fazla 1200 baytlık parçalar hâlinde UDP üzerinden, AES-256-GCM ile şifreli gider. Anahtar, eşleştirilmiş oturumun TLS exporter değeri ve rastgele oturum kimliğinden türetilir; kayan pencere tekrar oynatmayı reddeder. Kaybolan kare beklenmez: izleyen taraf TLS oturumu üzerinden anahtar kare ister. Windows, Media Foundation ile GPU üzerinde çözer ve Direct3D 11 ile dikey eşitleme beklemeden gösterir. Mac imleci akışa katılmaz, Windows imleci kullanılır; böylece imleç hareketinde görüntü gecikmesi olmaz. Fare ve klavye mevcut TLS oturumundan gider.
+
+Mac, yalnızca oturum süresince Windows ekranının en boy oranına en yakın ekran modunu seçer; oturum bitince veya uygulama kapanınca macOS eski moda döner.
 
 ### Tuş eşleme
 

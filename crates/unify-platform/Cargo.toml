@@ -27,9 +27,26 @@ windows-sys = { version = "0.59.0", features = [
     "Win32_UI_WindowsAndMessaging",
 ] }
 
+windows = { version = "0.62.2", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Direct3D",
+    "Win32_Graphics_Direct3D11",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_Media_MediaFoundation",
+    "Win32_System_Com",
+] }
+
 [target.'cfg(target_os = "macos")'.dependencies]
 core-graphics = { version = "0.24.0", features = ["highsierra"] }
 core-foundation = "0.10.1"
 objc2 = "0.6.3"
+block2 = "0.6.2"
+dispatch2 = "0.3.1"
+objc2-core-foundation = "0.3.2"
+objc2-core-media = "0.3.2"
+objc2-core-video = "0.3.2"
+objc2-video-toolbox = "0.3.2"
+objc2-screen-capture-kit = "0.3.2"
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSString", "NSArray", "NSEnumerator"] }
 objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "NSPasteboard"] }

@@ -29,6 +29,8 @@ export function StatusView({ status, onPair, onOpenSecurity }: { status: StatusS
   const update = useAction((patch: Parameters<typeof bridge.updateSettings>[0]) => bridge.updateSettings(patch));
   const release = useAction(() => bridge.releaseControl());
   const resync = useAction(() => bridge.resyncClipboard());
+  const startViewer = useAction(() => bridge.startViewer());
+  const stopViewer = useAction(() => bridge.stopViewer());
   const dismiss = useAction(() => bridge.clearError());
   const { connection, peer, settings } = status;
   const isMac = status.device.os === "macos";
@@ -40,7 +42,17 @@ export function StatusView({ status, onPair, onOpenSecurity }: { status: StatusS
         : undefined;
   const controlText = status.control === "controlling" && peer ? `${peer.name}` : status.control === "controlled" ? t.control.controlled : t.control.local;
   const diagramDescription = peer ? t.status.diagram(peer.name, t.sideOf[settings.peer_side], controlText) : t.status.noPeer;
-  const actionError = update.error ?? release.error ?? resync.error ?? dismiss.error;
+  const actionError = update.error ?? release.error ?? resync.error ?? dismiss.error ?? startViewer.error ?? stopViewer.error;
+  const stream = status.stream;
+  const canView = status.device.os === "windows" && peer?.os === "macos" && connection.state === "connected";
+  const streamDetail =
+    stream.state === "starting"
+      ? t.status.screenStarting
+      : stream.state === "viewing" && stream.latencyP50Us !== null && stream.latencyP99Us !== null
+        ? `${t.status.screenStats(stream.width, stream.height, stream.fps)} · ${t.status.screenLatency((stream.latencyP50Us / 1000).toFixed(1), (stream.latencyP99Us / 1000).toFixed(1))}`
+        : stream.state === "viewing"
+          ? t.status.screenStats(stream.width, stream.height, stream.fps)
+          : undefined;
 
   return (
     <div className="page">
@@ -103,6 +115,18 @@ export function StatusView({ status, onPair, onOpenSecurity }: { status: StatusS
             <Toggle checked={settings.clipboard_sync} label={t.status.clipboardSync} onChange={(value) => void update.run({ clipboard_sync: value })} />
           </div>
         </Row>
+        {canView ? (
+          <Row label={t.status.screenView} detail={streamDetail}>
+            {stream.state === "idle" ? (
+              <Button variant="primary" onClick={() => void startViewer.run()}>
+                {t.status.screenShow}
+              </Button>
+            ) : (
+              <Button onClick={() => void stopViewer.run()}>{t.status.screenStop}</Button>
+            )}
+          </Row>
+        ) : null}
+        {stream.state === "sharing" ? <Row label={t.status.screenSharing} /> : null}
         <Row label={t.status.lastEvent} detail={lastEvent(status, i18n)}>
           {status.lastError ? <Button onClick={() => void dismiss.run()}>{t.status.dismiss}</Button> : null}
         </Row>

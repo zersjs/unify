@@ -348,6 +348,7 @@ impl Actor {
             self.active = None;
             self.rtt_ms = None;
             self.connection_since_ms = now_ms();
+            self.stop_streams(false);
             self.on_session_lost();
             self.assembler.reset();
             self.clipboard_activity = crate::status::ClipboardActivity::Idle;
@@ -533,6 +534,17 @@ impl Actor {
             Message::Leave { side, ratio } => self.on_remote_leave(side, ratio),
             Message::Release => self.on_remote_release(),
             Message::Refuse { reason } => self.on_remote_refuse(reason),
+            Message::StreamRequest { session_id, udp_port, width, height, fps } => self.on_stream_request(session_id, udp_port, width, height, fps),
+            Message::StreamAccepted { session_id, width, height } => self.on_stream_accepted(session_id, width, height),
+            Message::StreamRefused { session_id, reason } => self.on_stream_refused(session_id, reason),
+            Message::StreamStop { session_id } => self.on_stream_stop(session_id),
+            Message::StreamKeyframe { session_id } => self.on_stream_keyframe(session_id),
+            Message::StreamClockPing { sent_us } => {
+                self.send_active(Message::StreamClockPong { sent_us, peer_us: crate::actor::now_us() });
+            }
+            Message::StreamClockPong { sent_us, peer_us } => self.on_stream_clock_pong(sent_us, peer_us),
+            Message::ViewerPointer { x, y } => self.on_viewer_pointer(x, y),
+            Message::ViewerRelease => self.release_viewer_input(),
             Message::Input(event) => self.on_remote_input(event),
             Message::ClipboardBegin { transfer_id, format: _, total_len, sha256 } => self.on_clipboard_begin(transfer_id, total_len, sha256),
             Message::ClipboardChunk { transfer_id, offset, data } => self.on_clipboard_chunk(transfer_id, offset, &data),

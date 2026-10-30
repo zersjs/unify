@@ -134,6 +134,27 @@ pub struct Stats {
     pub rejected_connections: u64,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StreamState {
+    Idle,
+    Starting,
+    Viewing,
+    Sharing,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamStatus {
+    pub state: StreamState,
+    pub width: u32,
+    pub height: u32,
+    pub fps: u32,
+    pub latency_p50_us: Option<u32>,
+    pub latency_p99_us: Option<u32>,
+    pub dropped_frames: u64,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StatusSnapshot {
@@ -142,6 +163,7 @@ pub struct StatusSnapshot {
     pub connection: ConnectionStatus,
     pub control: ControlState,
     pub capture: CaptureState,
+    pub stream: StreamStatus,
     pub clipboard: ClipboardStatus,
     pub permissions: PermissionsStatus,
     pub pairing: Option<PairingStatus>,

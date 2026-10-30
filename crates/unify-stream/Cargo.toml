@@ -1,0 +1,10 @@
+[package]
+name = "unify-stream"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+ring = "0.17.14"
+thiserror.workspace = true

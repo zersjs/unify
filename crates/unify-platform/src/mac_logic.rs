@@ -162,9 +162,46 @@ impl ClickCounter {
     }
 }
 
+const ANNEX_B_START_CODE: [u8; 4] = [0, 0, 0, 1];
+
+pub fn avcc_to_annex_b(avcc: &[u8], parameter_sets: &[Vec<u8>]) -> Option<Vec<u8>> {
+    let extra: usize = parameter_sets.iter().map(|set| set.len() + ANNEX_B_START_CODE.len()).sum();
+    let mut out = Vec::with_capacity(avcc.len() + extra);
+    for set in parameter_sets {
+        out.extend_from_slice(&ANNEX_B_START_CODE);
+        out.extend_from_slice(set);
+    }
+    let mut rest = avcc;
+    while !rest.is_empty() {
+        let (prefix, tail) = rest.split_first_chunk::<4>()?;
+        let length = u32::from_be_bytes(*prefix) as usize;
+        if length == 0 || length > tail.len() {
+            return None;
+        }
+        out.extend_from_slice(&ANNEX_B_START_CODE);
+        out.extend_from_slice(&tail[..length]);
+        rest = &tail[length..];
+    }
+    Some(out)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn converts_length_prefixed_units_and_prepends_parameter_sets() {
+        let avcc = [0, 0, 0, 2, 0x65, 0xAA, 0, 0, 0, 1, 0x41];
+        let out = avcc_to_annex_b(&avcc, &[vec![0x67], vec![0x68]]).unwrap();
+        assert_eq!(out, vec![0, 0, 0, 1, 0x67, 0, 0, 0, 1, 0x68, 0, 0, 0, 1, 0x65, 0xAA, 0, 0, 0, 1, 0x41]);
+    }
+
+    #[test]
+    fn rejects_truncated_or_empty_units() {
+        assert_eq!(avcc_to_annex_b(&[0, 0, 0, 5, 1], &[]), None);
+        assert_eq!(avcc_to_annex_b(&[0, 0], &[]), None);
+        assert_eq!(avcc_to_annex_b(&[0, 0, 0, 0], &[]), None);
+    }
 
     #[test]
     fn modifier_press_and_release_from_device_bits() {

@@ -1,7 +1,10 @@
 mod clipboard;
+mod decoder;
 mod display;
 mod hook;
 mod inject;
+mod renderer;
+mod viewer;
 
 use std::sync::Arc;
 
@@ -12,8 +15,8 @@ use windows_sys::Win32::UI::HiDpi::{SetProcessDpiAwarenessContext, DPI_AWARENESS
 use windows_sys::Win32::UI::WindowsAndMessaging::{GetCursorPos, SetCursorPos};
 
 use crate::{
-    CaptureShared, CaptureSink, ChangeSink, ClipboardText, Injector, PermissionKind, PermissionReport, PermissionState, Platform,
-    PlatformError, StopHandle,
+    CaptureShared, CaptureSink, ChangeSink, ClipboardText, FrameSink, Injector, PermissionKind, PermissionReport, PermissionState, Platform,
+    PlatformError, ScreenCapture, ScreenSettings, StopHandle, Viewer, ViewerSink,
 };
 
 pub struct WindowsPlatform;
@@ -106,4 +109,18 @@ impl Platform for WindowsPlatform {
     fn write_clipboard(&self, text: &str) -> Result<(), PlatformError> {
         clipboard::write_text(text)
     }
+
+    fn start_screen_capture(&self, _settings: ScreenSettings, _sink: FrameSink) -> Result<Box<dyn ScreenCapture>, PlatformError> {
+        Err(PlatformError::Unsupported)
+    }
+
+    fn start_viewer(&self, title: &str, stream: (u32, u32), sink: ViewerSink) -> Result<Box<dyn Viewer>, PlatformError> {
+        Ok(Box::new(viewer::WindowsViewer::start(title, stream, sink)?))
+    }
+
+    fn match_display_mode(&self, width: u32, height: u32) -> Result<(u32, u32), PlatformError> {
+        Ok((width, height))
+    }
+
+    fn restore_display_mode(&self) {}
 }

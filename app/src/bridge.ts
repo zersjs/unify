@@ -50,6 +50,8 @@ export interface DisplayRect {
   height: number;
 }
 
+export type StreamState = "idle" | "starting" | "viewing" | "sharing";
+
 export interface StatusSnapshot {
   device: {
     id: string;
@@ -79,6 +81,15 @@ export interface StatusSnapshot {
   };
   control: ControlState;
   capture: CaptureState;
+  stream: {
+    state: StreamState;
+    width: number;
+    height: number;
+    fps: number;
+    latencyP50Us: number | null;
+    latencyP99Us: number | null;
+    droppedFrames: number;
+  };
   clipboard: {
     activity: ClipboardActivity;
     lastTransferMs: number | null;
@@ -138,6 +149,8 @@ export const bridge = {
   requestPermissions: () => invoke<void>("request_permissions"),
   resetPermissions: () => invoke<void>("reset_permissions"),
   restartApp: () => invoke<void>("restart_app"),
+  startViewer: () => invoke<void>("start_viewer"),
+  stopViewer: () => invoke<void>("stop_viewer"),
   openPermissionSettings: (kind: PermissionKind) => invoke<void>("open_permission_settings", { kind }),
   resetIdentity: () => invoke<void>("reset_identity"),
   clearError: () => invoke<void>("clear_error"),

@@ -27,6 +27,7 @@ impl Actor {
         self.config.settings.input_sharing
             && self.session_ready()
             && self.control == Control::Local
+            && !self.streaming()
             && !self.refused_until.is_some_and(|until| Instant::now() < until)
     }
 
@@ -66,7 +67,7 @@ impl Actor {
         self.dirty = true;
     }
 
-    fn ensure_injector(&mut self) -> Result<(), RefuseReason> {
+    pub fn ensure_injector(&mut self) -> Result<(), RefuseReason> {
         if self.injector.is_some() {
             return Ok(());
         }
@@ -85,6 +86,16 @@ impl Actor {
                 Err(RefuseReason::Unavailable)
             }
         }
+    }
+
+    pub fn inject_event(&mut self, event: InjectEvent) {
+        self.inject(event);
+    }
+
+    pub fn release_viewer_input(&mut self) {
+        let remote_cursor = self.remote_cursor;
+        self.release_injected();
+        self.remote_cursor = remote_cursor;
     }
 
     fn inject(&mut self, event: InjectEvent) {
@@ -311,6 +322,7 @@ impl Actor {
         self.set_error(match reason {
             RefuseReason::SharingDisabled => "peer_sharing_disabled",
             RefuseReason::PermissionMissing => "peer_permission_missing",
+            RefuseReason::ScreenPermissionMissing => "peer_screen_permission",
             RefuseReason::Unavailable => "peer_unavailable",
         });
     }

@@ -19,3 +19,4 @@
 | Pencere kapatıldığında WebView2 | Süreçler bellekte kalır | Tepsiden "Çık" tamamen kapatır |
 | Arayüz dilleri | İngilizce (varsayılan) ve Türkçe | Yeni diller `app/src/i18n/` altında `en.ts` tipine göre eklenir |
 | Tema | Yalnızca açık tema | Arayüz, sistemin koyu modundan bağımsız olarak beyaz marka temasını kullanır |
+| Ekran görüntüleme | Yalnızca Mac'ten Windows'a, ana ekran, H.264, ses yok; imleç şekli Mac'i izlemez | İlk sürüm; gerçek uçtan uca gecikme kendi ağınızda ölçülmeli |

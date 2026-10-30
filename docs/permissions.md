@@ -6,6 +6,7 @@
 |---|---|---|
 | **Accessibility** | Generate key and mouse events received from the other computer (`CGEventPost`) and swallow local events while control is remote (filtering `CGEventTap`) | The Mac cannot be controlled; local events cannot be blocked when controlling Windows |
 | **Input Monitoring** | Listen to keyboard and mouse events | The Mac's keyboard and mouse cannot control Windows |
+| **Screen Recording** | Show the Mac screen in a window on Windows | The screen cannot be shown; Windows reports the missing permission |
 | **Local Network** (macOS 15+) | Connect to the Windows PC on the same network and find it via mDNS | No connection; the system asks on first connection |
 
 Steps:

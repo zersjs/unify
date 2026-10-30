@@ -5,6 +5,7 @@ members = [
     "crates/unify-core",
     "crates/unify-security",
     "crates/unify-net",
+    "crates/unify-stream",
     "crates/unify-platform",
     "crates/unify-runtime",
     "crates/unify-cli",

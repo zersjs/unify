@@ -98,6 +98,8 @@ fn main() {
             commands::release_control,
             commands::request_permissions,
             commands::reset_permissions,
+            commands::start_viewer,
+            commands::stop_viewer,
             commands::restart_app,
             commands::open_permission_settings,
             commands::reset_identity,

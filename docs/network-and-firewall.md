@@ -3,6 +3,7 @@
 | Traffic | Protocol / port | Direction | Scope |
 |---|---|---|---|
 | Unify session | TCP 47823 (configurable on the network settings page) | Inbound and outbound | Local network only; TLS 1.3 |
+| Screen view | UDP, random port chosen per session on the viewing computer | Inbound to the viewer | Local network only; AES-256-GCM with a per-session key |
 | Device discovery | UDP 5353, multicast 224.0.0.251 / ff02::fb (mDNS) | Inbound and outbound | Local network only; optional |
 
 No internet access is required. Unify never connects to external servers.

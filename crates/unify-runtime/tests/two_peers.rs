@@ -5,10 +5,10 @@ use std::time::Duration;
 
 use unify_core::config::SettingsPatch;
 use unify_platform::fake::FakePlatform;
-use unify_platform::{CaptureEvent, InjectEvent, Platform};
+use unify_platform::{CaptureEvent, EncodedFrame, InjectEvent, Platform, ViewerEvent};
 use unify_proto::keymap::usage;
 use unify_proto::{InputEvent, Message, OsKind, Side};
-use unify_runtime::{ConnectionState, ControlState, PairingStatus, RuntimeHandle, RuntimeOptions, StatusSnapshot};
+use unify_runtime::{ConnectionState, ControlState, PairingStatus, RuntimeHandle, RuntimeOptions, StatusSnapshot, StreamState};
 use unify_security::{MemorySecretStore, SecretStore};
 
 const WAIT: Duration = Duration::from_secs(15);
@@ -321,6 +321,58 @@ async fn capture_starts_after_permission_is_granted_while_running() {
     node.platform.set_capture_denied(false);
     wait_for(&node, "capture running", |s| s.capture == unify_runtime::CaptureState::Running).await;
     cleanup(vec![node]).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn screen_stream_delivers_frames_and_viewer_input_over_encrypted_udp() {
+    let (mac, win) = connected_pair("stream").await;
+    win.handle.start_viewer().await.unwrap();
+    wait_for(&win, "viewing", |s| s.stream.state == StreamState::Viewing).await;
+    wait_for(&mac, "sharing", |s| s.stream.state == StreamState::Sharing).await;
+    assert_eq!(win.platform.viewer_size(), Some((1920, 1080)));
+    let keyframe: Vec<u8> = (0..4_000u32).map(|i| i as u8).collect();
+    assert!(mac.platform.emit_screen_frame(EncodedFrame { data: keyframe.clone(), keyframe: true, capture_us: 11 }));
+    assert!(mac.platform.emit_screen_frame(EncodedFrame { data: vec![9; 100], keyframe: false, capture_us: 12 }));
+    wait_until("frames", || win.platform.viewer_frames().len() == 2).await;
+    assert_eq!(win.platform.viewer_frames()[0].data, keyframe);
+    assert_eq!(win.platform.viewer_frames()[1].capture_us, 12);
+
+    win.platform.emit_viewer_event(ViewerEvent::Pointer { x: 5_000, y: 10_000 });
+    wait_until("pointer", || mac.platform.injected().iter().any(|e| matches!(e, InjectEvent::MoveTo { x: 960, y: 1079, .. }))).await;
+    win.platform.emit_viewer_event(ViewerEvent::Input(InputEvent::Key { usage: usage::LEFT_CTRL, down: true }));
+    wait_until("key", || mac.platform.injected().contains(&InjectEvent::Key { usage: usage::LEFT_GUI, down: true })).await;
+    win.platform.emit_viewer_event(ViewerEvent::KeyframeNeeded);
+    wait_until("keyframe request", || mac.platform.keyframe_requests() == 1).await;
+
+    win.platform.emit_viewer_event(ViewerEvent::Closed);
+    wait_for(&mac, "sharing stopped", |s| s.stream.state == StreamState::Idle).await;
+    wait_until("key released", || mac.platform.injected().contains(&InjectEvent::Key { usage: usage::LEFT_GUI, down: false })).await;
+    wait_until("mode restored", || mac.platform.mode_restored() == 1).await;
+    assert_eq!(mac.handle.status().control, ControlState::Local);
+    cleanup(vec![mac, win]).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn screen_stream_reports_missing_screen_recording_permission() {
+    let (mac, win) = connected_pair("stream-denied").await;
+    mac.platform.set_screen_denied(true);
+    win.handle.start_viewer().await.unwrap();
+    wait_for(&win, "refusal", |s| s.last_error.as_ref().is_some_and(|e| e.code == "peer_screen_permission")).await;
+    assert_eq!(win.handle.status().stream.state, StreamState::Idle);
+    assert_eq!(mac.handle.status().stream.state, StreamState::Idle);
+    cleanup(vec![mac, win]).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn connection_loss_stops_screen_stream_on_both_sides() {
+    let (mac, win) = connected_pair("stream-loss").await;
+    win.handle.start_viewer().await.unwrap();
+    wait_for(&mac, "sharing", |s| s.stream.state == StreamState::Sharing).await;
+    let mac_dir = mac.dir.clone();
+    mac.handle.shutdown().await;
+    wait_for(&win, "viewer stopped", |s| s.stream.state == StreamState::Idle).await;
+    let _ = std::fs::remove_dir_all(mac_dir);
+    cleanup(vec![win]).await;
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]

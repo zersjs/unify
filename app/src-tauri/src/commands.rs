@@ -147,6 +147,16 @@ pub async fn reset_identity(state: State<'_, AppState>) -> CommandResult {
 }
 
 #[tauri::command]
+pub async fn start_viewer(state: State<'_, AppState>) -> CommandResult {
+    Ok(state.runtime.start_viewer().await?)
+}
+
+#[tauri::command]
+pub fn stop_viewer(state: State<'_, AppState>) -> CommandResult {
+    Ok(state.runtime.stop_viewer()?)
+}
+
+#[tauri::command]
 pub fn clear_error(state: State<'_, AppState>) -> CommandResult {
     Ok(state.runtime.clear_error()?)
 }

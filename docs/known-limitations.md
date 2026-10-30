@@ -19,3 +19,4 @@
 | WebView2 when the window is closed | Processes stay in memory | "Quit" from the tray exits completely |
 | UI languages | English (default) and Turkish | New locales are added as a table in `app/src/i18n/` typed against `en.ts` |
 | Theme | Light theme only | The interface follows the white brand theme regardless of the system dark mode |
+| Screen view | Mac to Windows only, main display, H.264, no audio; pointer shape does not follow the Mac | First version; real end-to-end latency must be measured on your network |

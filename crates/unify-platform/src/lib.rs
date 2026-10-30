@@ -1,5 +1,6 @@
 pub mod fake;
 pub mod mac_logic;
+pub mod viewer_logic;
 #[cfg(target_os = "macos")]
 pub mod macos;
 #[cfg(windows)]
@@ -48,6 +49,21 @@ pub struct PermissionReport {
     pub accessibility: PermissionState,
     pub input_monitoring: PermissionState,
     pub local_network: PermissionState,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ScreenSettings {
+    pub width: u32,
+    pub height: u32,
+    pub fps: u32,
+    pub bitrate_bps: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EncodedFrame {
+    pub data: Vec<u8>,
+    pub keyframe: bool,
+    pub capture_us: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -147,8 +163,31 @@ impl CaptureShared {
 
 pub type CaptureSink = Arc<dyn Fn(CaptureEvent) + Send + Sync>;
 pub type ChangeSink = Arc<dyn Fn() + Send + Sync>;
+pub type FrameSink = Arc<dyn Fn(EncodedFrame) + Send + Sync>;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ViewerEvent {
+    Input(InputEvent),
+    Pointer { x: u16, y: u16 },
+    FocusLost,
+    KeyframeNeeded,
+    Presented { capture_us: u64, presented_us: u64 },
+    Closed,
+    Failed,
+}
+
+pub type ViewerSink = Arc<dyn Fn(ViewerEvent) + Send + Sync>;
 
 pub trait StopHandle: Send {
+    fn stop(self: Box<Self>);
+}
+
+pub trait ScreenCapture: StopHandle + Sync {
+    fn request_keyframe(&self);
+}
+
+pub trait Viewer: Send + Sync {
+    fn submit(&self, frame: EncodedFrame) -> bool;
     fn stop(self: Box<Self>);
 }
 
@@ -173,6 +212,10 @@ pub trait Platform: Send + Sync + 'static {
     fn start_clipboard_watch(&self, sink: ChangeSink) -> Result<Box<dyn StopHandle>, PlatformError>;
     fn read_clipboard(&self) -> Result<Option<ClipboardText>, PlatformError>;
     fn write_clipboard(&self, text: &str) -> Result<(), PlatformError>;
+    fn start_screen_capture(&self, settings: ScreenSettings, sink: FrameSink) -> Result<Box<dyn ScreenCapture>, PlatformError>;
+    fn start_viewer(&self, title: &str, stream: (u32, u32), sink: ViewerSink) -> Result<Box<dyn Viewer>, PlatformError>;
+    fn match_display_mode(&self, width: u32, height: u32) -> Result<(u32, u32), PlatformError>;
+    fn restore_display_mode(&self);
 }
 
 pub fn native() -> Result<Arc<dyn Platform>, PlatformError> {

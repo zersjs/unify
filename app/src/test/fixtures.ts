@@ -23,6 +23,7 @@ export function statusFixture(overrides: Partial<StatusSnapshot> = {}): StatusSn
     connection: { state: "connected", attempt: 0, rttMs: 3, sinceMs: 0, remoteAddress: "192.168.1.20:47823", nextRetryMs: null },
     control: "local",
     capture: "running",
+    stream: { state: "idle", width: 0, height: 0, fps: 0, latencyP50Us: null, latencyP99Us: null, droppedFrames: 0 },
     clipboard: { activity: "idle", lastTransferMs: null, lastDirection: null, lastSkip: null },
     permissions: { accessibility: "granted", inputMonitoring: "granted", localNetwork: "unknown" },
     pairing: null,

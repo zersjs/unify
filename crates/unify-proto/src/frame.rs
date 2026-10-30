@@ -127,6 +127,15 @@ mod tests {
             Message::PairConfirm { mac: [3; 32] },
             Message::PairResult { accepted: true },
             Message::Refuse { reason: RefuseReason::PermissionMissing },
+            Message::StreamRequest { session_id: 1, udp_port: 5000, width: 1920, height: 1080, fps: 60 },
+            Message::StreamAccepted { session_id: 1, width: 1920, height: 1080 },
+            Message::StreamRefused { session_id: 1, reason: RefuseReason::ScreenPermissionMissing },
+            Message::StreamStop { session_id: 1 },
+            Message::StreamKeyframe { session_id: 1 },
+            Message::StreamClockPing { sent_us: 5 },
+            Message::StreamClockPong { sent_us: 5, peer_us: 9 },
+            Message::ViewerPointer { x: 100, y: RATIO_SCALE },
+            Message::ViewerRelease,
         ];
         for message in messages {
             roundtrip(message);

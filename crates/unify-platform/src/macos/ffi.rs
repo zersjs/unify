@@ -79,6 +79,7 @@ extern "C" {
     pub fn CGRequestListenEventAccess() -> bool;
     pub fn CGPreflightPostEventAccess() -> bool;
     pub fn CGRequestPostEventAccess() -> bool;
+    pub fn CGRequestScreenCaptureAccess() -> bool;
 }
 
 #[link(name = "ApplicationServices", kind = "framework")]

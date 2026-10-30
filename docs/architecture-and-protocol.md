@@ -22,7 +22,7 @@ Dependency direction: `proto ← core ← {security, net, platform} ← runtime 
 - **macOS injection thread**: owns the `CGEventSource` and modifier state.
 - **Tokio**: runtime actor, per-connection reader/writer tasks, listener, discovery bridge.
 
-## Protocol (version 2)
+## Protocol (version 3)
 
 Each frame is a big-endian `u32` length followed by a postcard-encoded `Message`. The largest frame is 64 KiB; a zero length, trailing bytes, a malformed field or an out-of-range value closes the connection.
 
@@ -68,6 +68,12 @@ TLS established ─┬─ outbound session ── send Hello ── AwaitHello �
 | Both send `Enter` simultaneously | — | The smaller device ID remains the controller |
 
 Edge sticking and infinite ping-pong are prevented by the arming rule: after a return, no switch happens until the pointer has left the edge.
+
+### Screen view
+
+The Mac captures its main display with ScreenCaptureKit and encodes low-latency H.264 with VideoToolbox. Frames travel over UDP in chunks of at most 1200 bytes, encrypted with AES-256-GCM. The key comes from the TLS exporter of the paired session plus a random session ID, and a sliding window rejects replays. A lost frame is never waited for: the viewer asks for a keyframe over the TLS session. Windows decodes through Media Foundation on the GPU and presents with Direct3D 11 without waiting for vertical sync. The Mac pointer is left out of the stream and the Windows pointer is used, so pointer movement has no video latency. Pointer and keys go over the existing TLS session.
+
+The Mac selects the display mode closest to the Windows screen aspect for the session only; macOS reverts it when the session ends or the app exits.
 
 ### Key mapping
 

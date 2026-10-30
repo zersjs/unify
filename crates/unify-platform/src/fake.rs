@@ -4,8 +4,8 @@ use unify_core::geometry::{Desktop, Rect};
 use unify_proto::OsKind;
 
 use crate::{
-    CaptureShared, CaptureSink, ChangeSink, ClipboardText, InjectEvent, Injector, PermissionKind, PermissionReport, PermissionState,
-    Platform, PlatformError, StopHandle,
+    CaptureShared, CaptureSink, ChangeSink, ClipboardText, EncodedFrame, FrameSink, InjectEvent, Injector, PermissionKind, PermissionReport,
+    PermissionState, Platform, PlatformError, ScreenCapture, ScreenSettings, StopHandle, Viewer, ViewerEvent, ViewerSink,
 };
 
 #[derive(Default)]
@@ -19,6 +19,13 @@ struct FakeState {
     warps: Vec<(i32, i32)>,
     injection_denied: bool,
     capture_denied: bool,
+    screen_denied: bool,
+    frame_sink: Option<FrameSink>,
+    keyframe_requests: u32,
+    viewer_sink: Option<ViewerSink>,
+    viewer_frames: Vec<EncodedFrame>,
+    viewer_size: Option<(u32, u32)>,
+    mode_restored: u32,
 }
 
 #[derive(Clone)]
@@ -91,8 +98,80 @@ impl FakePlatform {
         self.with(|state| state.capture_denied = denied);
     }
 
+    pub fn set_screen_denied(&self, denied: bool) {
+        self.with(|state| state.screen_denied = denied);
+    }
+
+    pub fn emit_screen_frame(&self, frame: EncodedFrame) -> bool {
+        match self.with(|state| state.frame_sink.clone()) {
+            Some(sink) => {
+                sink(frame);
+                true
+            }
+            None => false,
+        }
+    }
+
+    pub fn emit_viewer_event(&self, event: ViewerEvent) {
+        if let Some(sink) = self.with(|state| state.viewer_sink.clone()) {
+            sink(event);
+        }
+    }
+
+    pub fn viewer_frames(&self) -> Vec<EncodedFrame> {
+        self.with(|state| state.viewer_frames.clone())
+    }
+
+    pub fn viewer_size(&self) -> Option<(u32, u32)> {
+        self.with(|state| state.viewer_size)
+    }
+
+    pub fn keyframe_requests(&self) -> u32 {
+        self.with(|state| state.keyframe_requests)
+    }
+
+    pub fn mode_restored(&self) -> u32 {
+        self.with(|state| state.mode_restored)
+    }
+
     pub fn warps(&self) -> Vec<(i32, i32)> {
         self.with(|state| state.warps.clone())
+    }
+}
+
+struct FakeScreen {
+    state: Arc<Mutex<FakeState>>,
+}
+
+impl StopHandle for FakeScreen {
+    fn stop(self: Box<Self>) {
+        let mut guard = self.state.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        guard.frame_sink = None;
+    }
+}
+
+impl ScreenCapture for FakeScreen {
+    fn request_keyframe(&self) {
+        let mut guard = self.state.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        guard.keyframe_requests += 1;
+    }
+}
+
+struct FakeViewer {
+    state: Arc<Mutex<FakeState>>,
+}
+
+impl Viewer for FakeViewer {
+    fn submit(&self, frame: EncodedFrame) -> bool {
+        let mut guard = self.state.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        guard.viewer_frames.push(frame);
+        true
+    }
+
+    fn stop(self: Box<Self>) {
+        let mut guard = self.state.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        guard.viewer_sink = None;
+        guard.viewer_size = None;
     }
 }
 
@@ -204,5 +283,29 @@ impl Platform for FakePlatform {
             sink();
         }
         Ok(())
+    }
+
+    fn start_screen_capture(&self, _settings: ScreenSettings, sink: FrameSink) -> Result<Box<dyn ScreenCapture>, PlatformError> {
+        if self.with(|state| state.screen_denied) {
+            return Err(PlatformError::PermissionDenied("screen_recording"));
+        }
+        self.with(|state| state.frame_sink = Some(sink));
+        Ok(Box::new(FakeScreen { state: self.state.clone() }))
+    }
+
+    fn start_viewer(&self, _title: &str, stream: (u32, u32), sink: ViewerSink) -> Result<Box<dyn Viewer>, PlatformError> {
+        self.with(|state| {
+            state.viewer_sink = Some(sink);
+            state.viewer_size = Some(stream);
+        });
+        Ok(Box::new(FakeViewer { state: self.state.clone() }))
+    }
+
+    fn match_display_mode(&self, width: u32, height: u32) -> Result<(u32, u32), PlatformError> {
+        Ok((width, height))
+    }
+
+    fn restore_display_mode(&self) {
+        self.with(|state| state.mode_restored += 1);
     }
 }
