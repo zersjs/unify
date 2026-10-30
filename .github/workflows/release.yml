@@ -50,8 +50,8 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           SHA: ${{ steps.sha.outputs.sha }}
         run: |
-          gh release create "v$VERSION" --target "$SHA" --title "Unify $VERSION" --generate-notes --draft
-          id=$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name == \"v$VERSION\") | .id")
+          id=$(gh api "repos/$GITHUB_REPOSITORY/releases" -f tag_name="v$VERSION" -f target_commitish="$SHA" -f name="Unify $VERSION" -F draft=true -F generate_release_notes=true --jq .id)
+          test -n "$id"
           echo "id=$id" >> "$GITHUB_OUTPUT"
 
   build:

@@ -5,7 +5,13 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use block2::RcBlock;
-use core_graphics::display::{CGConfigureOption, CGDisplay, CGDisplayMode};
+use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex, CFArrayRef};
+use core_foundation::base::CFRelease;
+use core_graphics::display::{
+    CGConfigureDisplayWithDisplayMode, CGConfigureOption, CGDisplay, CGDisplayCopyAllDisplayModes, CGDisplayModeGetPixelHeight,
+    CGDisplayModeGetPixelWidth,
+};
+use core_graphics::sys::CGDisplayModeRef;
 use dispatch2::{DispatchQueue, DispatchRetained};
 use objc2::rc::Retained;
 use objc2::runtime::{NSObject, ProtocolObject};
@@ -33,19 +39,52 @@ const START_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_KEYFRAME_INTERVAL_FRAMES: i32 = 600;
 const QUEUE_DEPTH: isize = 3;
 
+// CGDisplayMode::all_display_modes in core-graphics releases modes it does not own, which corrupts the heap.
+struct DisplayModes(CFArrayRef);
+
+impl DisplayModes {
+    fn of(display: u32) -> Option<Self> {
+        let modes = unsafe { CGDisplayCopyAllDisplayModes(display, std::ptr::null()) };
+        (!modes.is_null()).then_some(Self(modes))
+    }
+
+    fn get(&self, index: usize) -> CGDisplayModeRef {
+        unsafe { CFArrayGetValueAtIndex(self.0, index as isize) as CGDisplayModeRef }
+    }
+
+    fn sizes(&self) -> Vec<(u32, u32)> {
+        let count = unsafe { CFArrayGetCount(self.0) } as usize;
+        (0..count)
+            .map(|index| {
+                let mode = self.get(index);
+                unsafe { (CGDisplayModeGetPixelWidth(mode) as u32, CGDisplayModeGetPixelHeight(mode) as u32) }
+            })
+            .collect()
+    }
+}
+
+impl Drop for DisplayModes {
+    fn drop(&mut self) {
+        unsafe { CFRelease(self.0.cast()) };
+    }
+}
+
 pub fn match_display_mode(width: u32, height: u32) -> Result<(u32, u32), PlatformError> {
     let display = CGDisplay::main();
     let current = display.display_mode().ok_or_else(|| PlatformError::Os(String::from("no current display mode")))?;
     let current_size = (current.pixel_width() as u32, current.pixel_height() as u32);
-    let modes = CGDisplayMode::all_display_modes(display.id, std::ptr::null()).unwrap_or_default();
-    let sizes: Vec<(u32, u32)> = modes.iter().map(|mode| (mode.pixel_width() as u32, mode.pixel_height() as u32)).collect();
+    let Some(modes) = DisplayModes::of(display.id) else {
+        return Ok(current_size);
+    };
+    let sizes = modes.sizes();
     let Some(chosen) = pick_display_mode(&sizes, (width, height)).filter(|index| sizes[*index] != current_size) else {
         return Ok(current_size);
     };
     let config = display.begin_configuration().map_err(|code| PlatformError::Os(format!("CGBeginDisplayConfiguration failed: {code}")))?;
-    if let Err(code) = display.configure_display_with_display_mode(&config, &modes[chosen]) {
+    let status = unsafe { CGConfigureDisplayWithDisplayMode(config, display.id, modes.get(chosen), std::ptr::null()) };
+    if status != 0 {
         let _ = display.cancel_configuration(&config);
-        return Err(PlatformError::Os(format!("CGConfigureDisplayWithDisplayMode failed: {code}")));
+        return Err(PlatformError::Os(format!("CGConfigureDisplayWithDisplayMode failed: {status}")));
     }
     display
         .complete_configuration(&config, CGConfigureOption::ConfigureForAppOnly)
