@@ -1,10 +1,11 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
-import type { LogLevel, MacKeyboardLayout, Side, StatusSnapshot, UiLanguage } from "@/bridge";
+import type { LogLevel, MacKeyboardLayout, Side, StatusSnapshot, UiLanguage, UpdateStatus } from "@/bridge";
 import { Button, Group, InlineError, Row, Segmented, Toggle, ToggleRow } from "@/components/controls";
 import { DraggableLayout } from "@/components/DraggableLayout";
 import { Logo } from "@/components/Logo";
 import { languageNames, useI18n } from "@/i18n";
 import type { SettingsViewModel } from "@/viewmodels/useSettingsViewModel";
+import { useUpdateViewModel } from "@/viewmodels/useUpdateViewModel";
 
 interface PageProps {
   status: StatusSnapshot;
@@ -74,6 +75,47 @@ function CommitField({
   );
 }
 
+function updateText(status: UpdateStatus, t: ReturnType<typeof useI18n>["t"], errorMessage: (code: string) => string, version: string): string {
+  switch (status.kind) {
+    case "idle":
+      return t.settings.updateCurrent(version);
+    case "checking":
+      return t.settings.updateChecking;
+    case "up_to_date":
+      return t.settings.updateUpToDate(version);
+    case "available":
+      return t.settings.updateAvailable(status.version);
+    case "downloading":
+      return t.settings.updateDownloading(status.version, status.percent);
+    case "installing":
+      return t.settings.updateInstalling(status.version);
+    case "failed":
+      return errorMessage(status.code);
+  }
+}
+
+function UpdateGroup({ status, vm }: PageProps) {
+  const { t, errorMessage } = useI18n();
+  const updates = useUpdateViewModel();
+  const busy = ["checking", "downloading", "installing"].includes(updates.status.kind);
+  return (
+    <Group footer={t.settings.autoUpdateHelp}>
+      <ToggleRow label={t.settings.autoUpdate} checked={vm.settings.auto_update} onChange={vm.toggle("auto_update")} />
+      <Row label={t.settings.updates} detail={updateText(updates.status, t, errorMessage, status.appVersion)}>
+        {updates.status.kind === "available" ? (
+          <Button variant="primary" onClick={() => void updates.install.run()}>
+            {t.settings.updateInstall}
+          </Button>
+        ) : (
+          <Button disabled={busy} onClick={() => void updates.check.run()}>
+            {t.settings.updateCheck}
+          </Button>
+        )}
+      </Row>
+    </Group>
+  );
+}
+
 export function GeneralPage({ status, vm }: PageProps) {
   const { t } = useI18n();
   return (
@@ -98,6 +140,7 @@ export function GeneralPage({ status, vm }: PageProps) {
           />
         </Row>
       </Group>
+      <UpdateGroup status={status} vm={vm} />
       <Group>
         <Row label={t.settings.configLocation} detail={<span className="mono selectable">{status.device.configPath}</span>} />
       </Group>

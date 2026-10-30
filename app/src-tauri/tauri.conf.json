@@ -32,23 +32,50 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "app", "dmg"],
+    "targets": [
+      "nsis",
+      "app",
+      "dmg"
+    ],
     "category": "Utility",
     "shortDescription": "Keyboard, mouse and clipboard sharing",
     "longDescription": "Unify shares keyboard, mouse and text clipboard between two personal computers over an encrypted local-network connection.",
     "copyright": "Unify",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "windows": {
-      "webviewInstallMode": { "type": "downloadBootstrapper" },
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["English", "Turkish"],
+        "languages": [
+          "English",
+          "Turkish"
+        ],
         "displayLanguageSelector": false
       }
     },
     "macOS": {
       "minimumSystemVersion": "13.0",
-      "signingIdentity": "-"
+      "signingIdentity": "-",
+      "hardenedRuntime": false
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJDNENEREFCNTE4MzY2NTIKUldSU1pvTlJxOTFNTEZhY2FYRjgvWGhqeklITVhiclJabFlybXlZaWNoUHNJVmVvM1c3ZU0wV0cK",
+      "endpoints": [
+        "https://github.com/zersjs/unify/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
     }
   }
 }

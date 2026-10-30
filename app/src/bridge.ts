@@ -31,6 +31,7 @@ export interface Settings {
   autostart: boolean;
   log_level: LogLevel;
   language: UiLanguage;
+  auto_update: boolean;
 }
 
 export type SettingsPatch = Partial<Omit<Settings, "layout_revision">>;
@@ -49,6 +50,15 @@ export interface DisplayRect {
   width: number;
   height: number;
 }
+
+export type UpdateStatus =
+  | { kind: "idle" }
+  | { kind: "checking" }
+  | { kind: "up_to_date" }
+  | { kind: "available"; version: string }
+  | { kind: "downloading"; version: string; percent: number }
+  | { kind: "installing"; version: string }
+  | { kind: "failed"; code: string };
 
 export type StreamState = "idle" | "starting" | "viewing" | "sharing";
 
@@ -149,6 +159,11 @@ export const bridge = {
   requestPermissions: () => invoke<void>("request_permissions"),
   resetPermissions: () => invoke<void>("reset_permissions"),
   restartApp: () => invoke<void>("restart_app"),
+  updateStatus: () => invoke<UpdateStatus>("get_update_status"),
+  onUpdate: (handler: (status: UpdateStatus) => void): Promise<UnlistenFn> =>
+    listen<UpdateStatus>("update", (event) => handler(event.payload)),
+  checkForUpdates: () => invoke<void>("check_for_updates"),
+  installUpdate: () => invoke<void>("install_update"),
   startViewer: () => invoke<void>("start_viewer"),
   stopViewer: () => invoke<void>("stop_viewer"),
   openPermissionSettings: (kind: PermissionKind) => invoke<void>("open_permission_settings", { kind }),

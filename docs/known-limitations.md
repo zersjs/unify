@@ -3,7 +3,7 @@
 | Topic | State | Reason / alternative |
 |---|---|---|
 | macOS runtime | Not yet run on a real Mac | Development environment is Windows; verify with [test plan](test-plan.md) M1–M29 |
-| Signing and notarization | Packages are unsigned (ad-hoc on macOS) | Requires Apple Developer and Authenticode certificates |
+| Signing and notarization | Windows packages are unsigned; macOS releases are self-signed and not notarized | Requires Apple Developer and Authenticode certificates |
 | Lock screen, UAC, elevated windows | Cannot be controlled | OS security boundary; not bypassed |
 | Pointer while control is remote | Stays visible at the centre of the primary display on Windows and at the exit edge on the Mac | No public API lets a background app hide the system pointer |
 | Keyboard layout | Physical key positions are forwarded; the same layout is expected on both sides | Character-based translation planned for phase 5 |

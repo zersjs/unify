@@ -19,6 +19,14 @@
 
 Off **by default**. Enable it under **General → Start at login**. When enabled, the app starts with the `--background` argument and does not show its window. Windows uses the per-user `Run` registry key; macOS uses a LaunchAgent in `~/Library/LaunchAgents`.
 
+### Updates
+
+Unify checks `latest.json` on the newest GitHub release 20 seconds after launch and then hourly. It also checks when the paired device reports a different protocol version. An update is installed only if its minisign signature matches the public key built into the app.
+
+With **General → Update automatically** on (the default), Unify installs while control is local and screen view is idle, then restarts. With it off, **General → Check now** and **Install and restart** do the same by hand. Development builds never check.
+
+The check sends an ordinary HTTPS request to GitHub, which sees the IP address and app version. Turn the setting off to stop automatic installs; hourly checks continue so the app can show that an update exists.
+
 ## Development environment
 
 | Tool | Version | Notes |
@@ -82,11 +90,26 @@ cargo check -p unify-platform --target aarch64-apple-darwin
 
 When pushed to GitHub, `.github/workflows/ci.yml` runs lint, type checks and tests on both platforms, then produces unsigned `.exe` and `.dmg` packages as artifacts. This is the shortest way to obtain a macOS package without building on a Mac.
 
+## Releases
+
+After `ci` succeeds on a push to `main`, `.github/workflows/release.yml` publishes version `0.2.<run number>` if `crates/`, `app/` or the Cargo files changed since the last tag. The version is stamped during the build and is not committed. Use **Run workflow** on the Actions page to force a release.
+
+Repository secrets:
+
+| Secret | Contents |
+|---|---|
+| `TAURI_SIGNING_PRIVATE_KEY` | Update signing private key |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Password of that key |
+| `UNIFY_MAC_CERT_P12` | Base64 of the macOS self-signed `.p12` |
+| `UNIFY_MAC_CERT_PASSWORD` | Password of that `.p12` |
+
+Losing the update key means installed copies can no longer accept updates. Rotating the macOS certificate means macOS permissions must be granted again.
+
 ## Signing and notarization
 
 | Platform | Requirement | State |
 |---|---|---|
-| macOS | Apple Developer Program membership (annual), "Developer ID Application" certificate, notarization with `notarytool` | Not done; package is ad-hoc signed. Because Accessibility grants are tied to the code signature, each new build may require removing and re-adding Unify in the permission list. |
+| macOS | Apple Developer Program membership (annual), "Developer ID Application" certificate, notarization with `notarytool` | Not done. Release builds use a stable self-signed certificate (`Unify Self-Signed`) so that privacy permissions can survive updates; this is not yet confirmed on a Mac. CI artifacts remain ad-hoc signed and lose permissions on each build. Gatekeeper still blocks the first manual install. |
 | Windows | Authenticode code-signing certificate (OV/EV) | Not done; a SmartScreen warning is expected. |
 
 To sign, fill in `bundle.macOS.signingIdentity` and, for Windows, `bundle.windows.certificateThumbprint` in `tauri.conf.json`.

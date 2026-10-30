@@ -1,0 +1,143 @@
+name: release
+
+on:
+  workflow_run:
+    workflows: [ci]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: create release
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_id: ${{ steps.release.outputs.id }}
+      sha: ${{ steps.sha.outputs.sha }}
+      publish: ${{ steps.changes.outputs.publish }}
+    steps:
+      - id: sha
+        run: echo "sha=${{ github.event.workflow_run.head_sha || github.sha }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ steps.sha.outputs.sha }}
+          fetch-depth: 0
+      - id: changes
+        name: Skip when the application did not change
+        run: |
+          last=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+          if [ -z "$last" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] || ! git diff --quiet "$last" HEAD -- crates app Cargo.toml Cargo.lock; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+      - id: version
+        run: echo "version=0.2.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+      - id: release
+        if: steps.changes.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ steps.sha.outputs.sha }}
+        run: |
+          gh release create "v$VERSION" --target "$SHA" --title "Unify $VERSION" --generate-notes --draft
+          id=$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name == \"v$VERSION\") | .id")
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: package (${{ matrix.os }})
+    needs: prepare
+    if: needs.prepare.outputs.publish == 'true'
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        include:
+          - os: windows-latest
+            bundles: nsis
+          - os: macos-14
+            bundles: app,dmg
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: app
+        run: npm ci
+      - name: Stamp version
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          node -e "const f='app/src-tauri/tauri.conf.json',fs=require('fs'),c=JSON.parse(fs.readFileSync(f));c.version=process.env.VERSION;fs.writeFileSync(f,JSON.stringify(c,null,2))"
+          node -e "const f='Cargo.toml',fs=require('fs');fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace(/^version = \".*\"/m,'version = \"'+process.env.VERSION+'\"'))"
+      - name: Import stable macOS signing identity
+        if: runner.os == 'macOS'
+        env:
+          CERTIFICATE: ${{ secrets.UNIFY_MAC_CERT_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.UNIFY_MAC_CERT_PASSWORD }}
+        run: |
+          test -n "$CERTIFICATE"
+          keychain_password=$(openssl rand -hex 16)
+          echo "$CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$keychain_password" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$keychain_password" build.keychain
+          security set-keychain-settings -lut 7200 build.keychain
+          security import "$RUNNER_TEMP/cert.p12" -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" build.keychain
+          openssl pkcs12 -in "$RUNNER_TEMP/cert.p12" -passin "pass:$CERTIFICATE_PASSWORD" -nokeys -legacy -out "$RUNNER_TEMP/cert.pem" || openssl pkcs12 -in "$RUNNER_TEMP/cert.p12" -passin "pass:$CERTIFICATE_PASSWORD" -nokeys -out "$RUNNER_TEMP/cert.pem"
+          sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$RUNNER_TEMP/cert.pem"
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning
+          echo "APPLE_SIGNING_IDENTITY=Unify Self-Signed" >> "$GITHUB_ENV"
+      - name: Build, sign and upload
+        uses: tauri-apps/tauri-action@19b93bb55601e3e373a93cfb6eb4242e45f5af20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: app
+          tauriScript: npx tauri
+          releaseId: ${{ needs.prepare.outputs.release_id }}
+          tagName: v${{ needs.prepare.outputs.version }}
+          includeUpdaterJson: true
+          args: --bundles ${{ matrix.bundles }} --config src-tauri/tauri.release.conf.json
+      - name: Show designated requirement
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: codesign -dr - target/release/bundle/macos/Unify.app
+
+  publish:
+    name: publish release
+    needs: [prepare, build]
+    if: needs.prepare.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: gh release edit "v$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false --latest

@@ -48,6 +48,7 @@ export function statusFixture(overrides: Partial<StatusSnapshot> = {}): StatusSn
       autostart: false,
       log_level: "info",
       language: "en",
+      auto_update: true,
     },
     isoKeyboard: true,
     displays: [{ x: 0, y: 0, width: 1512, height: 982 }],

@@ -67,6 +67,7 @@ pub struct Settings {
     pub autostart: bool,
     pub log_level: LogLevel,
     pub language: UiLanguage,
+    pub auto_update: bool,
 }
 
 impl Default for Settings {
@@ -89,6 +90,7 @@ impl Default for Settings {
             autostart: false,
             log_level: LogLevel::Info,
             language: UiLanguage::En,
+            auto_update: true,
         }
     }
 }
@@ -134,6 +136,7 @@ pub struct SettingsPatch {
     pub autostart: Option<bool>,
     pub log_level: Option<LogLevel>,
     pub language: Option<UiLanguage>,
+    pub auto_update: Option<bool>,
 }
 
 impl SettingsPatch {
@@ -169,7 +172,8 @@ impl SettingsPatch {
             discovery,
             autostart,
             log_level,
-            language
+            language,
+            auto_update
         );
         next.normalized()
     }

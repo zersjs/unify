@@ -19,6 +19,14 @@
 
 Varsayılan **kapalıdır**. Genel → "Oturum açıldığında başlat" ile açılır. Açıkken uygulama `--background` argümanıyla, pencere göstermeden başlar. Windows'ta kullanıcı `Run` kayıt anahtarı, macOS'ta `~/Library/LaunchAgents` altında bir LaunchAgent kullanılır.
 
+### Güncellemeler
+
+Unify, açılıştan 20 saniye sonra ve ardından saatte bir en yeni GitHub sürümündeki `latest.json` dosyasını kontrol eder. Eşleşmiş cihaz farklı bir protokol sürümü bildirdiğinde de kontrol yapar. Güncelleme yalnızca minisign imzası uygulamaya gömülü açık anahtarla eşleşirse kurulur.
+
+**Genel → Otomatik güncelle** açıkken (varsayılan) Unify, kontrol yerelde ve ekran görüntüleme boştayken kurulumu yapıp yeniden başlar. Kapalıyken aynı işlem **Genel → Şimdi kontrol et** ve **Kur ve yeniden başlat** ile elle yapılır. Geliştirme derlemeleri kontrol yapmaz.
+
+Kontrol, GitHub'a sıradan bir HTTPS isteği gönderir; GitHub IP adresini ve uygulama sürümünü görür. Ayar kapatıldığında otomatik kurulum durur; uygulama güncelleme olduğunu gösterebilsin diye saatlik kontrol sürer.
+
 ## Geliştirme ortamı
 
 | Araç | Sürüm | Not |
@@ -83,11 +91,26 @@ cargo check -p unify-platform --target aarch64-apple-darwin
 
 GitHub'a gönderildiğinde `.github/workflows/ci.yml` iki platformda lint, tip denetimi ve testleri çalıştırır, ardından imzasız `.exe` ve `.dmg` paketlerini artefakt olarak üretir. Mac'te derleme yapmadan macOS paketi almanın en kısa yolu budur.
 
+## Sürüm yayınlama
+
+`main` dalına yapılan push sonrası `ci` başarılı olursa `.github/workflows/release.yml`, son etiketten beri `crates/`, `app/` veya Cargo dosyaları değiştiyse `0.2.<çalıştırma numarası>` sürümünü yayınlar. Sürüm derleme sırasında yazılır, commit edilmez. Yayını zorlamak için Actions sayfasında **Run workflow** kullanılır.
+
+Depo sırları:
+
+| Sır | İçerik |
+|---|---|
+| `TAURI_SIGNING_PRIVATE_KEY` | Güncelleme imzalama özel anahtarı |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Bu anahtarın parolası |
+| `UNIFY_MAC_CERT_P12` | macOS kendinden imzalı `.p12` dosyasının Base64 hali |
+| `UNIFY_MAC_CERT_PASSWORD` | Bu `.p12` dosyasının parolası |
+
+Güncelleme anahtarı kaybolursa kurulu kopyalar artık güncelleme alamaz. macOS sertifikası değişirse macOS izinleri yeniden verilir.
+
 ## İmzalama ve notarization
 
 | Platform | Gereken | Durum |
 |---|---|---|
-| macOS | Apple Developer Program üyeliği (yıllık), "Developer ID Application" sertifikası, `notarytool` ile notarization | Yapılmadı; paket ad-hoc imzalı. Erişilebilirlik izni kod imzasına bağlı olduğundan her yeni derlemede izin listesinden Unify'ı kaldırıp yeniden eklemek gerekebilir. |
+| macOS | Apple Developer Program üyeliği (yıllık), "Developer ID Application" sertifikası, `notarytool` ile notarization | Yapılmadı. Yayın derlemeleri, gizlilik izinleri güncellemelerden sonra korunabilsin diye sabit bir kendinden imzalı sertifika (`Unify Self-Signed`) kullanır; bu henüz Mac üzerinde doğrulanmadı. CI artefaktları ad-hoc imzalı kalır ve her derlemede izinleri kaybeder. Gatekeeper ilk elle kurulumu yine engeller. |
 | Windows | Authenticode kod imzalama sertifikası (OV/EV) | Yapılmadı; SmartScreen uyarısı beklenir. |
 
 İmza eklemek için `tauri.conf.json` içindeki `bundle.macOS.signingIdentity` ve Windows için `bundle.windows.certificateThumbprint` alanları doldurulur.

@@ -3,7 +3,7 @@
 | Konu | Durum | Neden / alternatif |
 |---|---|---|
 | macOS çalışma zamanı | Gerçek Mac'te henüz çalıştırılmadı | Geliştirme ortamı Windows; [test planı](09-test-plani.md) M1–M29 ile doğrulanmalı |
-| İmza ve notarization | Paketler imzasız (macOS ad-hoc) | Apple Developer ve Authenticode sertifikası gerekir |
+| İmza ve notarization | Windows paketleri imzasız; macOS sürümleri kendinden imzalı ve notarize edilmemiş | Apple Developer ve Authenticode sertifikası gerekir |
 | Kilit ekranı, UAC, yönetici pencereleri | Kontrol edilemez | İşletim sistemi güvenlik sınırı; aşılmaya çalışılmaz |
 | Kontrol başka bilgisayardayken imleç | Windows'ta birincil ekranın ortasında, Mac'te çıkılan kenarda görünür kalır | Arka plandaki bir uygulamanın imleci gizlemesi için genel API yok |
 | Klavye düzeni | Fiziksel tuş konumu aktarılır; iki tarafta aynı düzen beklenir | Karakter tabanlı çeviri Aşama 5'te |

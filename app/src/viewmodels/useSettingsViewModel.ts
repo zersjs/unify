@@ -18,7 +18,7 @@ export function useSettingsViewModel(status: StatusSnapshot) {
   const loadDiagnostics = useAction(async () => setDiagnostics(await bridge.diagnostics()));
 
   const toggle = useCallback(
-    (key: keyof Pick<SettingsPatch, "input_sharing" | "clipboard_sync" | "edge_switch" | "switch_hotkey" | "swap_command_control" | "invert_scroll" | "discovery" | "autostart">) =>
+    (key: keyof Pick<SettingsPatch, "input_sharing" | "clipboard_sync" | "edge_switch" | "switch_hotkey" | "swap_command_control" | "invert_scroll" | "discovery" | "autostart" | "auto_update">) =>
       (value: boolean) => update.run({ [key]: value }),
     [update],
   );
