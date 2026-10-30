@@ -41,7 +41,7 @@ spake2 = "0.4.0"
 sha2 = "0.10.9"
 hmac = "0.12.1"
 hex = "0.4.3"
-rand = "0.8.5"
+rand = "0.10.3"
 zeroize = { version = "1.8.1", features = ["derive"] }
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native"] }
 mdns-sd = "0.13.11"
