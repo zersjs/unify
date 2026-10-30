@@ -38,7 +38,7 @@ windows = { version = "0.62.2", features = [
 ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-core-graphics = { version = "0.24.0", features = ["highsierra"] }
+core-graphics = { version = "0.25.0", features = ["highsierra"] }
 core-foundation = "0.10.1"
 objc2 = "0.6.3"
 block2 = "0.6.2"
